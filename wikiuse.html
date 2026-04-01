@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WikiUse</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f5f2eb;
+  --ink: #0e0d0b;
+  --ink-2: #3d3a34;
+  --ink-3: #7c7870;
+  --cream: #ede9df;
+  --cream-2: #e4dfd5;
+  --red: #c0392b;
+  --red-soft: rgba(192,57,43,0.08);
+  --border: rgba(14,13,11,0.1);
+  --border-strong: rgba(14,13,11,0.2);
+  --w: 620px;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── MASTHEAD ─── */
+.mast {
+  max-width: var(--w);
+  margin: 0 auto;
+  padding: 48px 24px 0;
+  animation: fadeDown 0.6s ease both;
+}
+
+.mast-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.live-dot {
+  width: 8px; height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  margin-top: 6px;
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+.logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(40px, 10vw, 64px);
+  font-style: italic;
+  letter-spacing: -2px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.dateline {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-top: 4px;
+}
+
+.mast-rule {
+  height: 1px;
+  background: var(--ink);
+  margin: 16px 0 0;
+}
+
+.mast-rule-thin {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 0;
+}
+
+/* ─── TABS ─── */
+.tabs-wrap {
+  max-width: var(--w);
+  margin: 0 auto;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  animation: fadeDown 0.6s 0.1s ease both;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 14px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid transparent;
+  border-radius: 100px;
+  cursor: pointer;
+  background: none;
+  color: var(--ink-3);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tab:hover {
+  color: var(--ink);
+  background: var(--cream);
+}
+
+.tab.on {
+  color: var(--bg);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* ─── FEED ─── */
+.feed {
+  max-width: var(--w);
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ─── LOADING ─── */
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 32px 0;
+}
+
+.skel {
+  background: linear-gradient(90deg, var(--cream) 25%, var(--cream-2) 50%, var(--cream) 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── FEATURED ─── */
+.featured {
+  cursor: pointer;
+  padding: 28px 0 24px;
+  border-bottom: 1px solid var(--border-strong);
+  animation: fadeUp 0.5s ease both;
+}
+
+.feat-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--red);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feat-kicker::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 1px;
+  background: var(--red);
+  flex-shrink: 0;
+}
+
+.feat-img-wrap {
+  width: 100%;
+  aspect-ratio: 16/7;
+  overflow: hidden;
+  border-radius: 3px;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.feat-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.02);
+  transition: transform 0.6s ease;
+}
+
+.featured:hover .feat-img {
+  transform: scale(1.06);
+}
+
+.feat-source {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.feat-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(24px, 5vw, 34px);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.featured:hover .feat-title {
+  color: var(--red);
+}
+
+.feat-desc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin-bottom: 14px;
+  font-weight: 400;
+}
+
+.feat-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+
+.feat-meta-dot {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+.read-more {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 0;
+  border-bottom: 1.5px solid var(--ink);
+  transition: gap 0.2s ease;
+}
+
+.featured:hover .read-more {
+  gap: 10px;
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 0 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--ink-3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── ROW ─── */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: fadeUp 0.4s ease both;
+}
+
+.row:hover {
+  background: var(--cream);
+  margin: 0 -16px;
+  padding: 16px 16px;
+  border-radius: 6px;
+  border-color: transparent;
+}
+
+.row-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--ink-3);
+  min-width: 24px;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.row-body { flex: 1; min-width: 0; }
+
+.row-source {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 300;
+  color: var(--ink-3);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.row-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+  margin-bottom: 6px;
+  transition: color 0.2s;
+}
+
+.row:hover .row-title { color: var(--red); }
+
+.row-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+
+.row-thumb {
+  width: 72px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: block;
+  filter: grayscale(15%);
+  transition: filter 0.3s;
+}
+
+.row:hover .row-thumb { filter: grayscale(0%); }
+
+/* ─── ERROR ─── */
+.err-state {
+  padding: 40px 0;
+  text-align: center;
+}
+
+.err-state p {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 16px;
+}
+
+.btn-retry {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.2s;
+}
+
+.btn-retry:hover { background: var(--red); transform: scale(1.03); }
+
+/* ─── READER PANEL ─── */
+.reader-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(14,13,11,0);
+  pointer-events: none;
+  z-index: 100;
+  transition: background 0.35s ease;
+}
+
+.reader-bg.open {
+  background: rgba(14,13,11,0.5);
+  pointer-events: all;
+  backdrop-filter: blur(2px);
+}
+
+.reader {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: var(--w);
+  max-height: 90vh;
+  background: var(--bg);
+  border-radius: 20px 20px 0 0;
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.reader-bg.open .reader {
+  transform: translateX(-50%) translateY(0);
+}
+
+.reader-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-strong);
+  border-radius: 2px;
+  margin: 14px auto 0;
+  flex-shrink: 0;
+}
+
+.reader-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.r-back {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.r-back:hover { color: var(--red); }
+
+.r-open {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--ink-3);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1px;
+  transition: color 0.2s;
+}
+
+.r-open:hover { color: var(--red); border-color: var(--red); }
+
+.reader-body {
+  overflow-y: auto;
+  padding: 28px 28px 48px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  flex: 1;
+}
+
+.r-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(22px, 5vw, 30px);
+  line-height: 1.25;
+  letter-spacing: -0.4px;
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+
+.r-img {
+  width: 100%;
+  border-radius: 4px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.r-source {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--red);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.r-desc {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink-2);
+  font-weight: 400;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.row:nth-child(1) { animation-delay: 0.05s; }
+.row:nth-child(2) { animation-delay: 0.10s; }
+.row:nth-child(3) { animation-delay: 0.15s; }
+.row:nth-child(4) { animation-delay: 0.20s; }
+.row:nth-child(5) { animation-delay: 0.25s; }
+.row:nth-child(6) { animation-delay: 0.30s; }
+.row:nth-child(7) { animation-delay: 0.35s; }
+.row:nth-child(8) { animation-delay: 0.40s; }
+.row:nth-child(9) { animation-delay: 0.45s; }
+.row:nth-child(10) { animation-delay: 0.50s; }
+</style>
+</head>
+<body>
+
+<div class="mast">
+  <div class="mast-top">
+    <div class="logo">WikiUse</div>
+    <div class="live-dot" title="Live"></div>
+  </div>
+  <div class="dateline" id="datestr"></div>
+  <div class="mast-rule"></div>
+  <div class="mast-rule-thin"></div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="cats"></div>
+</div>
+
+<div class="feed" id="feed"></div>
+
+<!-- READER -->
+<div class="reader-bg" id="rbg" onclick="handleBgClick(event)">
+  <div class="reader" id="rpanel">
+    <div class="reader-handle"></div>
+    <div class="reader-bar">
+      <button class="r-back" onclick="closeR()">← Back</button>
+      <a class="r-open" id="rlink" target="_blank">Full Article ↗</a>
+    </div>
+    <div class="reader-body" id="rbody"></div>
+  </div>
+</div>
+
+<script>
+const KEY = "66f330c48c3350c80ac880ebd8e29387";
+
+const CATS = [
+  { name: 'Top News',   topic: 'breaking-news' },
+  { name: 'Tech',       topic: 'technology' },
+  { name: 'Science',    topic: 'science' },
+  { name: 'World',      topic: 'world' },
+  { name: 'Business',   topic: 'business' },
+  { name: 'Sports',     topic: 'sports' },
+  { name: 'Health',     topic: 'health' },
+  { name: 'Nation',     topic: 'nation' },
+];
+
+let cur = 0, arts = [];
+
+/* DATE */
+document.getElementById('datestr').textContent =
+  new Date().toLocaleDateString('en-IN', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  }).toUpperCase();
+
+/* TABS */
+function buildTabs() {
+  const el = document.getElementById('cats');
+  el.innerHTML = '';
+  CATS.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (i === cur ? ' on' : '');
+    b.textContent = c.name;
+    b.onclick = () => { cur = i; buildTabs(); load(); };
+    el.appendChild(b);
+  });
+}
+
+function ago(str) {
+  const m = Math.floor((Date.now() - new Date(str)) / 60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return m + 'm ago';
+  if (m < 1440) return Math.floor(m / 60) + 'h ago';
+  return Math.floor(m / 1440) + 'd ago';
+}
+
+/* SKELETON */
+function showSkeleton() {
+  const feed = document.getElementById('feed');
+  let h = `<div class="loading">
+    <div class="skel" style="height:260px;margin-top:28px;border-radius:4px;"></div>
+    <div class="skel" style="height:20px;width:40%;margin-top:28px;"></div>
+    <div class="skel" style="height:16px;width:90%;margin-top:12px;"></div>
+    <div class="skel" style="height:16px;width:75%;margin-top:8px;"></div>`;
+  for (let i = 0; i < 5; i++) {
+    h += `<div style="display:flex;gap:16px;margin-top:20px;align-items:flex-start">
+      <div class="skel" style="width:24px;height:14px;flex-shrink:0;margin-top:4px;"></div>
+      <div style="flex:1">
+        <div class="skel" style="height:12px;width:30%;margin-bottom:8px;"></div>
+        <div class="skel" style="height:16px;width:95%;margin-bottom:6px;"></div>
+        <div class="skel" style="height:16px;width:70%;margin-bottom:6px;"></div>
+        <div class="skel" style="height:11px;width:20%;"></div>
+      </div>
+      <div class="skel" style="width:72px;height:54px;flex-shrink:0;border-radius:3px;"></div>
+    </div>`;
+  }
+  h += '</div>';
+  feed.innerHTML = h;
+}
+
+/* LOAD */
+async function load() {
+  showSkeleton();
+  try {
+    const realUrl = `https://gnews.io/api/v4/top-headlines?topic=${CATS[cur].topic}&lang=en&max=20&apikey=${KEY}`;
+    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(realUrl)}`;
+    const r = await fetch(url);
+    const data = await r.json();
+    if (!data.articles) throw new Error('No articles found');
+    arts = data.articles.map(a => ({
+      title: a.title,
+      description: a.description,
+      content: a.content,
+      url: a.url,
+      urlToImage: a.image,
+      publishedAt: a.publishedAt,
+      source: { name: a.source?.name || '' },
+    }));
+    if (!arts.length) throw new Error('No articles found');
+    render();
+  } catch (e) {
+    document.getElementById('feed').innerHTML = `
+      <div class="err-state">
+        <p>${e.message}</p>
+        <button class="btn-retry" onclick="load()">Try Again</button>
+      </div>`;
+  }
+}
+
+/* RENDER */
+function render() {
+  const feed = document.getElementById('feed');
+  const [top, ...rest] = arts;
+
+  let h = `
+    <div class="featured" onclick="openArt(0)">
+      <div class="feat-kicker">Top Story</div>
+      ${top.urlToImage ? `<div class="feat-img-wrap"><img class="feat-img" src="${top.urlToImage}" onerror="this.closest('.feat-img-wrap').remove()"></div>` : ''}
+      <div class="feat-source">${top.source?.name || ''}</div>
+      <div class="feat-title">${top.title}</div>
+      ${top.description ? `<div class="feat-desc">${top.description}</div>` : ''}
+      <div class="feat-meta">
+        <span>${ago(top.publishedAt)}</span>
+        <span class="feat-meta-dot"></span>
+        <span class="read-more">Read Story →</span>
+      </div>
+    </div>
+    <div class="section-label">More Stories</div>`;
+
+  rest.forEach((a, i) => {
+    h += `<div class="row" onclick="openArt(${i + 1})">
+      <div class="row-num">${(i + 1).toString().padStart(2, '0')}</div>
+      <div class="row-body">
+        <div class="row-source">${a.source?.name || ''}</div>
+        <div class="row-title">${a.title}</div>
+        <div class="row-time">${ago(a.publishedAt)}</div>
+      </div>
+      ${a.urlToImage ? `<img class="row-thumb" src="${a.urlToImage}" onerror="this.remove()">` : ''}
+    </div>`;
+  });
+
+  feed.innerHTML = h;
+}
+
+/* READER */
+function openArt(i) {
+  const a = arts[i];
+  document.getElementById('rlink').href = a.url;
+  document.getElementById('rbody').innerHTML = `
+    <div class="r-source">${a.source?.name || ''}</div>
+    <div class="r-title">${a.title}</div>
+    ${a.urlToImage ? `<img class="r-img" src="${a.urlToImage}" onerror="this.remove()">` : ''}
+    <div class="r-desc">${a.description || ''}</div>
+  `;
+  document.getElementById('rbg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeR() {
+  document.getElementById('rbg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleBgClick(e) {
+  if (e.target === document.getElementById('rbg')) closeR();
+}
+
+buildTabs();
+load();
+</script>
+</body>
+</html>
