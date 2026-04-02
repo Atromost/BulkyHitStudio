@@ -64,6 +64,10 @@ For the best visual representation of the workspace, focus on these key views:
 <img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/98ed0822-dd69-43af-bee6-e37a8b9b65d6" />
 
 ---
+## Nexus
+---
+## WikiUse
+---
 
 > **Note:** Flowly Notes and Drawkiboard uses hardware acceleration for smooth panning across large canvases.
 
