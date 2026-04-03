@@ -1,861 +1,703 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DrawkiFlow — Your Tools, One Place</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrawkiFlow - Premium Desktop Environment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Core & Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --drawki-purple: #9b5de5;
+            --flowly-green: #00f5d4;
+            --anzen-blue: #00bbf9;
+            --easycv-yellow: #fee440;
+            --gigapdf-pink: #f15bb5;
+            --nexus-indigo: #8338ec;
+            --tempo-orange: #fb5607;
+            --wikiuse-blue: #3a86ff;
+            --bg-color: #030305;
+        }
 
-  :root {
-    --flowly: #c8f135;
-    --drawki: #7c6ff7;
-    --drawki-pink: #e8547a;
-    --tempo: #ff6b2b;
-    --tempo-gold: #ffd166;
-    --nexus: #00d9a0;
-    --wikiuse: #3b82f6;
-    --gigapdf: #f43f5e;
-    --easycv: #a78bfa;
-    --bg: #080810;
-    --border: rgba(255,255,255,0.08);
-  }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            cursor: none; /* Custom cursor */
+            user-select: none;
+        }
 
-  html, body { width:100%; height:100%; overflow:hidden; }
+        /* --- Custom Cursor --- */
+        #cursor-dot {
+            position: fixed;
+            top: 0; left: 0;
+            width: 6px; height: 6px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10000;
+            transition: transform 0.1s ease;
+        }
+        #cursor-ring {
+            position: fixed;
+            top: 0; left: 0;
+            width: 30px; height: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.2s, height 0.2s, background 0.2s;
+            /* Springy follow via JS */
+        }
+        body.hovering #cursor-ring {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
 
-  body {
-    font-family: 'Outfit', sans-serif;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: none;
-    position: relative;
-  }
+        /* --- Animated Background --- */
+        #bg-container {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .aurora-blob {
+            position: absolute;
+            filter: blur(120px);
+            opacity: 0.4;
+            border-radius: 50%;
+            animation: drift 20s infinite alternate ease-in-out;
+            will-change: transform;
+        }
+        .blob-1 { width: 40vw; height: 40vw; background: var(--drawki-purple); top: -10%; left: -10%; animation-delay: 0s; }
+        .blob-2 { width: 35vw; height: 35vw; background: var(--flowly-green); bottom: -10%; right: -10%; animation-delay: -5s; }
+        .blob-3 { width: 30vw; height: 30vw; background: var(--tempo-orange); top: 40%; left: 40%; opacity: 0.2; animation-delay: -10s; }
+        
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(5vw, 5vh) scale(1.1); }
+            100% { transform: translate(-5vw, 10vh) scale(0.9); }
+        }
 
-  /* ── CUSTOM CURSOR ── */
-  .cursor {
-    position:fixed; width:10px; height:10px;
-    border-radius:50%; background:white;
-    pointer-events:none; z-index:9999;
-    mix-blend-mode:difference;
-    transition: transform 0.1s ease;
-  }
-  .cursor.clicking { transform: scale(0.6); }
-  .cursor-ring {
-    position:fixed; width:32px; height:32px;
-    border-radius:50%; border:1px solid rgba(255,255,255,0.35);
-    pointer-events:none; z-index:9998;
-    transition: transform 0.22s ease, opacity 0.22s ease, border-color 0.3s ease;
-  }
-  .cursor-ring.hovering { border-color: rgba(255,255,255,0.7); }
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
 
-  /* ── AURORA BG ── */
-  .aurora { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
-  .aurora-blob { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.11; animation:drift ease-in-out infinite alternate; }
-  .a1 { width:650px;height:520px; background:var(--flowly); top:-120px;left:-180px; animation-duration:16s; }
-  .a2 { width:550px;height:450px; background:var(--drawki); bottom:-100px;right:-120px; animation-duration:20s; animation-delay:-7s; }
-  .a3 { width:380px;height:380px; background:var(--tempo); top:50%;left:50%; transform:translate(-50%,-50%); animation-duration:11s; animation-delay:-3s; opacity:0.065; }
-  .a4 { width:320px;height:320px; background:var(--tempo-gold); bottom:10%;right:28%; animation-duration:24s; animation-delay:-10s; opacity:0.055; }
-  .a5 { width:280px;height:280px; background:var(--gigapdf); top:20%;right:10%; animation-duration:19s; animation-delay:-5s; opacity:0.045; }
-  .a6 { width:240px;height:240px; background:var(--easycv); top:35%;left:15%; animation-duration:17s; animation-delay:-8s; opacity:0.045; }
-  @keyframes drift {
-    from { transform: translate(0,0) scale(1); }
-    to   { transform: translate(45px,35px) scale(1.1); }
-  }
+        .noise-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            opacity: 0.8;
+            mix-blend-mode: overlay;
+        }
+        
+        canvas#particles {
+            position: absolute;
+            inset: 0;
+        }
 
-  /* ── GRID ── */
-  .grid {
-    position:fixed; inset:0; z-index:1; pointer-events:none;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
+        /* --- Brutalist GitHub Button --- */
+        .brutalist-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(10, 10, 10, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 4px 4px 0px rgba(255, 255, 255, 0.8);
+            color: #fff;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-decoration: none;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 4px;
+        }
+        .brutalist-btn svg {
+            width: 18px; height: 18px;
+        }
+        .brutalist-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px rgba(255, 255, 255, 0.9);
+            background: rgba(20, 20, 20, 0.8);
+        }
+        .brutalist-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(255, 255, 255, 0.5);
+        }
+        .brutalist-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+            transform: skewX(-20deg);
+            animation: shine 4s infinite;
+        }
+        @keyframes shine {
+            0%, 20% { left: -100%; }
+            40%, 100% { left: 200%; }
+        }
 
-  /* ── NOISE ── */
-  body::after {
-    content:''; position:fixed; inset:0; z-index:2; pointer-events:none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    opacity:0.5;
-  }
+        /* --- Desktop Glass Icons --- */
+        #desktop-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding-bottom: 80px; /* space for dock */
+        }
+        .desktop-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+        .desktop-header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #fff, rgba(255,255,255,0.5));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            max-w: 64rem;
+            width: 100%;
+            padding: 0 2rem;
+            animation: fadeInUp 1s ease-out 0.2s backwards;
+        }
+        @media (max-width: 768px) {
+            .glass-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        .glass-app {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+        .glass-app:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        .glass-app svg {
+            width: 42px;
+            height: 42px;
+            stroke-width: 1.2;
+            transition: all 0.3s ease;
+        }
+        .glass-app:hover svg {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 12px var(--app-color));
+        }
+        .glass-app span {
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.7);
+            transition: color 0.3s ease;
+        }
+        .glass-app:hover span {
+            color: #fff;
+        }
 
-  /* ── FLOATING PARTICLES ── */
-  .particles { position:fixed; inset:0; z-index:3; pointer-events:none; overflow:hidden; }
-  .p-dot { position:absolute; border-radius:50%; animation: floatUp linear infinite; }
-  @keyframes floatUp {
-    0%   { transform:translateY(0) scale(1); opacity:0; }
-    8%   { opacity:1; }
-    88%  { opacity:0.4; }
-    100% { transform:translateY(-108vh) scale(0.3); opacity:0; }
-  }
+        /* --- macOS Style Dock --- */
+        .dock-wrapper {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            animation: slideUp 0.8s ease-out 0.5s backwards;
+        }
+        .dock-container {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(15, 15, 15, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 32px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            align-items: flex-end;
+            height: 72px; /* Fixed base height */
+        }
+        .dock-item {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94), background 0.2s, color 0.2s;
+            transform-origin: bottom center;
+            /* Magnification logic applied via JS inline styles */
+        }
+        .dock-item svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 1.5;
+        }
+        .dock-item::before {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--app-color);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .dock-item:hover::before {
+            opacity: 1;
+        }
+        .dock-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--app-color);
+        }
+        .dock-tooltip {
+            position: absolute;
+            top: -45px;
+            background: rgba(10, 10, 10, 0.85);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .dock-item:hover .dock-tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-  /* ── CORNER MARKS ── */
-  .corner { position:fixed; z-index:20; width:28px; height:28px; }
-  .corner svg line { stroke:rgba(255,255,255,0.1); stroke-width:1; }
-  .corner-tl { top:18px; left:18px; }
-  .corner-tr { top:18px; right:18px; transform:rotate(90deg); }
-  .corner-bl { bottom:18px; left:18px; transform:rotate(-90deg); }
-  .corner-br { bottom:18px; right:18px; transform:rotate(180deg); }
+        /* --- Loading Screen --- */
+        #loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: #030305;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        #loader-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .loader-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #loader-overlay.active .loader-content {
+            transform: translateY(0);
+        }
+        #loader-icon-container {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        #loader-icon-container svg {
+            width: 100%;
+            height: 100%;
+            stroke-width: 1;
+            filter: drop-shadow(0 0 20px currentColor);
+        }
+        #loader-name {
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+        .loader-bar-bg {
+            width: 240px;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        #loader-bar-fill {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            width: 0%;
+            background: white;
+            transition: width 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+            box-shadow: 0 0 10px currentColor;
+        }
 
-  /* ── SIDE LABELS ── */
-  .side-label {
-    position:fixed; z-index:20;
-    font-family:'JetBrains Mono', monospace; font-size:8px;
-    letter-spacing:0.3em; writing-mode:vertical-rl;
-    text-orientation:mixed; opacity:0.18;
-    top:50%;
-  }
-  .side-label.left  { left:22px;  color:var(--flowly); transform:translateY(-50%) rotate(180deg); }
-  .side-label.right { right:22px; color:var(--tempo);  transform:translateY(-50%); }
-
-  /* ── GITHUB BUTTON ── */
-  .github-btn {
-    position:fixed; top:18px; right:18px; z-index:50;
-    display:flex; align-items:center; gap:8px;
-    padding:7px 14px 7px 11px;
-    background:rgba(255,255,255,0.04);
-    border:1px solid var(--border); border-radius:999px;
-    color:rgba(255,255,255,0.55);
-    font-family:'Outfit', sans-serif; font-size:12px; font-weight:500;
-    text-decoration:none; cursor:pointer;
-    backdrop-filter:blur(16px);
-    transition:all 0.3s ease;
-    animation:slideDown 0.6s 0.5s both;
-  }
-  .github-btn:hover {
-    background:rgba(255,255,255,0.09);
-    border-color:rgba(255,255,255,0.22);
-    color:white; transform:translateY(-2px);
-    box-shadow:0 8px 28px rgba(0,0,0,0.55);
-  }
-  .gh-badge {
-    font-family:'JetBrains Mono',monospace; font-size:9px;
-    color:var(--flowly); background:rgba(200,241,53,0.07);
-    border:1px solid rgba(200,241,53,0.18);
-    border-radius:999px; padding:2px 7px;
-    transition: background 0.3s, border-color 0.3s;
-  }
-  .github-btn:hover .gh-badge { background:rgba(200,241,53,0.14); border-color:rgba(200,241,53,0.38); }
-
-  @keyframes slideDown {
-    from { opacity:0; transform:translateY(-14px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-
-  /* ── MAIN WRAPPER ── */
-  .wrapper {
-    position:relative; z-index:20;
-    display:flex; flex-direction:column;
-    align-items:center; gap:18px;
-    animation:riseUp 1s cubic-bezier(0.22,1,0.36,1) both;
-  }
-  @keyframes riseUp {
-    from { opacity:0; transform:translateY(36px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-
-  /* ── EYEBROW ── */
-  .eyebrow {
-    font-family:'JetBrains Mono', monospace;
-    font-size:10px; letter-spacing:0.45em;
-    text-transform:uppercase; color:rgba(255,255,255,0.22);
-    text-align:center;
-    animation: fadeIn 0.9s 0.1s both;
-  }
-
-  /* ── BRAND LOGO ── */
-  .brand {
-    display:flex; align-items:baseline; gap:0;
-    line-height:1;
-    animation: letterPop 0.8s cubic-bezier(0.22,1,0.36,1) 0.15s both;
-    position: relative;
-  }
-  .brand::after {
-    content:'';
-    position:absolute; inset:0;
-    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%);
-    background-size: 200% 100%;
-    animation: shimmer 5s ease-in-out infinite;
-    pointer-events: none;
-  }
-  @keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  .brand-drawki {
-    font-family:'Bebas Neue', sans-serif;
-    font-size: clamp(52px, 9vw, 110px);
-    letter-spacing: -0.01em;
-    background: linear-gradient(110deg, var(--drawki) 0%, var(--drawki-pink) 55%, var(--flowly) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 44px rgba(124,111,247,0.38));
-  }
-  .brand-flow {
-    font-family:'Bebas Neue', sans-serif;
-    font-size: clamp(52px, 9vw, 110px);
-    letter-spacing: -0.01em;
-    background: linear-gradient(110deg, var(--flowly) 0%, #9ef53a 40%, var(--tempo-gold) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 44px rgba(200,241,53,0.32));
-  }
-  .brand-dot {
-    font-family:'Bebas Neue', sans-serif;
-    font-size: clamp(20px, 3.5vw, 44px);
-    color: rgba(255,255,255,0.13);
-    margin: 0 4px;
-    align-self: center;
-    -webkit-text-fill-color: rgba(255,255,255,0.13);
-  }
-  @keyframes letterPop {
-    from { opacity:0; transform:translateY(28px) skewX(-5deg); }
-    to   { opacity:1; transform:translateY(0) skewX(0); }
-  }
-
-  /* ── TAGLINE ── */
-  .tagline {
-    display:flex; align-items:center; gap:10px;
-    animation: fadeIn 0.9s 0.35s both;
-  }
-  .tagline-word {
-    font-family:'JetBrains Mono', monospace;
-    font-size: clamp(9px, 1.1vw, 12px);
-    letter-spacing:0.3em;
-    text-transform:uppercase;
-    transition: opacity 0.2s;
-  }
-  .tagline-word:hover { opacity: 0.7; }
-  .tw-flowly { color:var(--flowly); }
-  .tw-drawki { color:var(--drawki); }
-  .tw-tempo  { color:var(--tempo); }
-  .tagline-sep { width:28px; height:1px; background:rgba(255,255,255,0.1); }
-
-  /* ── PILL BADGES ── */
-  .badges {
-    display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
-    animation: fadeIn 0.9s 0.5s both;
-  }
-  .badge {
-    font-family:'JetBrains Mono', monospace;
-    font-size:9px; letter-spacing:0.2em;
-    padding:5px 14px; border-radius:999px;
-    border:1px solid; text-transform:uppercase;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    cursor: default;
-  }
-  .badge:hover { transform: translateY(-2px); }
-  .badge-flowly { color:var(--flowly); border-color:rgba(200,241,53,0.22); background:rgba(200,241,53,0.05); }
-  .badge-flowly:hover { background:rgba(200,241,53,0.1); box-shadow:0 4px 20px rgba(200,241,53,0.15); }
-  .badge-drawki { color:var(--drawki); border-color:rgba(124,111,247,0.22); background:rgba(124,111,247,0.05); }
-  .badge-drawki:hover { background:rgba(124,111,247,0.1); box-shadow:0 4px 20px rgba(124,111,247,0.15); }
-  .badge-tempo  { color:var(--tempo);  border-color:rgba(255,107,43,0.22);  background:rgba(255,107,43,0.05); }
-  .badge-tempo:hover  { background:rgba(255,107,43,0.1);  box-shadow:0 4px 20px rgba(255,107,43,0.15); }
-  .badge-easycv { color:var(--easycv); border-color:rgba(167,139,250,0.22); background:rgba(167,139,250,0.05); }
-  .badge-easycv:hover { background:rgba(167,139,250,0.1); box-shadow:0 4px 20px rgba(167,139,250,0.15); }
-
-  /* ── BOTTOM TAG ── */
-  .bottom-tag {
-    font-family:'JetBrains Mono', monospace;
-    font-size:8px; letter-spacing:0.35em;
-    color:rgba(255,255,255,0.1); text-align:center;
-    animation: fadeIn 0.9s 0.65s both;
-  }
-  .bottom-tag span { color:rgba(255,255,255,0.18); }
-
-  @keyframes fadeIn {
-    from { opacity:0; transform:translateY(12px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-
-  /* ── DOCK ── */
-  .dock-outer {
-    position: fixed;
-    bottom: 22px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 100;
-    display: flex;
-    align-items: flex-end;
-    height: 100px;
-    animation: dockRise 0.8s cubic-bezier(0.22,1,0.36,1) 0.4s both;
-  }
-  @keyframes dockRise {
-    from { opacity:0; transform:translateX(-50%) translateY(20px); }
-    to   { opacity:1; transform:translateX(-50%) translateY(0); }
-  }
-  .dock-panel {
-    display: flex;
-    align-items: flex-end;
-    gap: 9px;
-    padding: 0 14px 10px;
-    background: rgba(10,10,20,0.72);
-    border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 22px;
-    backdrop-filter: blur(32px);
-    -webkit-backdrop-filter: blur(32px);
-    box-shadow:
-      0 8px 48px rgba(0,0,0,0.65),
-      inset 0 1px 0 rgba(255,255,255,0.055),
-      inset 0 -1px 0 rgba(0,0,0,0.4);
-    height: 76px;
-    transition: box-shadow 0.3s ease;
-  }
-  .dock-panel:hover {
-    box-shadow:
-      0 12px 56px rgba(0,0,0,0.7),
-      inset 0 1px 0 rgba(255,255,255,0.07),
-      inset 0 -1px 0 rgba(0,0,0,0.4);
-  }
-  .dock-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-    text-decoration: none;
-    cursor: pointer;
-    flex-shrink: 0;
-    overflow: visible;
-    transition: border-color 0.2s ease, box-shadow 0.25s ease;
-    will-change: width, height;
-  }
-  .dock-item:hover {
-    border-color: rgba(255,255,255,0.18);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  }
-  .dock-item svg { pointer-events: none; display: block; transition: filter 0.2s ease; }
-  .dock-item:hover svg { filter: brightness(1.15); }
-
-  .dock-label {
-    position: absolute;
-    bottom: calc(100% + 12px);
-    left: 50%;
-    transform: translateX(-50%) translateY(8px);
-    white-space: nowrap;
-    background: rgba(8,8,18,0.92);
-    border: 1px solid rgba(255,255,255,0.11);
-    border-radius: 8px;
-    padding: 5px 11px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.07em;
-    color: rgba(255,255,255,0.82);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-  }
-  .dock-label::after {
-    content: '';
-    position: absolute;
-    top: 100%; left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: rgba(255,255,255,0.11);
-    margin-top: -1px;
-  }
-  .dock-label::before {
-    content: '';
-    position: absolute;
-    top: 100%; left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: rgba(8,8,18,0.92);
-    z-index: 1;
-  }
-  .dock-item:hover .dock-label { opacity:1; transform:translateX(-50%) translateY(0); }
-  .dock-sep {
-    width: 1px; height: 36px;
-    background: rgba(255,255,255,0.07);
-    align-self: center; flex-shrink: 0; margin: 0 1px;
-  }
-  .dock-dot {
-    position: absolute;
-    bottom: -7px; left: 50%;
-    transform: translateX(-50%);
-    width: 4px; height: 4px;
-    border-radius: 50%; opacity: 0.5;
-    transition: opacity 0.2s, transform 0.2s;
-  }
-  .dock-item:hover .dock-dot { opacity: 0.85; transform: translateX(-50%) scale(1.3); }
-
-  /* ── LOADING SCREEN ── */
-  #loadingScreen {
-    position: fixed;
-    inset: 0;
-    z-index: 9990;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 28px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s cubic-bezier(0.22,1,0.36,1);
-  }
-  #loadingScreen.visible {
-    pointer-events: all;
-    opacity: 1;
-  }
-  #loadingScreen.hiding {
-    opacity: 0;
-    transition: opacity 0.45s ease;
-  }
-  .loading-bg {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 30% 40%, rgba(124,111,247,0.48) 0%, transparent 55%),
-                radial-gradient(ellipse at 70% 65%, rgba(200,241,53,0.32) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(232,84,122,0.22) 0%, transparent 60%),
-                rgba(8,8,16,0.9);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-  }
-  .loading-bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(124,111,247,0.14) 0%, transparent 40%, rgba(200,241,53,0.09) 70%, transparent 100%);
-    animation: gradientSweep 3.5s ease-in-out infinite alternate;
-  }
-  @keyframes gradientSweep {
-    from { opacity: 0.5; transform: scale(1) rotate(0deg); }
-    to   { opacity: 1;   transform: scale(1.06) rotate(2.5deg); }
-  }
-  .loading-label {
-    position: relative;
-    z-index: 1;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.42em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
-    animation: labelPulse 2s ease-in-out infinite;
-  }
-  @keyframes labelPulse {
-    0%, 100% { opacity: 0.45; }
-    50%       { opacity: 0.85; }
-  }
-  .loading-icon-wrap {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .loading-glow {
-    position: absolute;
-    width: 170px;
-    height: 170px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--loading-color, #7c6ff7) 0%, transparent 70%);
-    opacity: 0.22;
-    animation: glowPulse 2.2s ease-in-out infinite;
-    filter: blur(24px);
-  }
-  @keyframes glowPulse {
-    0%, 100% { transform: scale(0.88); opacity: 0.18; }
-    50%       { transform: scale(1.22); opacity: 0.38; }
-  }
-  .loader {
-    --cloud-color: #4387f4;
-    --arrows-color: #80b1ff;
-    --time-animation: 1s;
-    transform: scale(1.3);
-    position: relative;
-    z-index: 1;
-  }
-  .loader #cloud { width: 100px; height: 100px; }
-  .loader #cloud rect { fill: var(--cloud-color); }
-  .loader #cloud g:nth-child(3) {
-    transform-origin: 50% 72.8938%;
-    fill: var(--arrows-color);
-    filter: drop-shadow(0 0 8px black);
-    animation: rotation var(--time-animation) linear infinite;
-  }
-  @keyframes rotation {
-    0%   { transform: rotate(0deg); }
-    50%  { transform: rotate(180deg); }
-    100% { transform: rotate(360deg); }
-  }
-  .loading-toolname {
-    position: relative;
-    z-index: 1;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 34px;
-    letter-spacing: 0.14em;
-    color: white;
-    opacity: 0;
-    transform: translateY(12px);
-    transition: opacity 0.4s 0.18s ease, transform 0.4s 0.18s ease;
-    text-shadow: 0 0 36px var(--loading-color, #7c6ff7);
-  }
-  #loadingScreen.visible .loading-toolname {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .loading-bar-wrap {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 2px;
-    background: rgba(255,255,255,0.05);
-    z-index: 2;
-    overflow: hidden;
-  }
-  .loading-bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--loading-color, #7c6ff7), rgba(255,255,255,0.7));
-    animation: barFill 1.5s cubic-bezier(0.4,0,0.2,1) forwards;
-    box-shadow: 0 0 14px var(--loading-color, #7c6ff7);
-  }
-  @keyframes barFill {
-    0%   { width: 0%; }
-    55%  { width: 72%; }
-    88%  { width: 91%; }
-    100% { width: 100%; }
-  }
-  .loading-scanline {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 4px);
-    pointer-events: none;
-    z-index: 1;
-    animation: scanMove 8s linear infinite;
-  }
-  @keyframes scanMove {
-    0%   { background-position: 0 0; }
-    100% { background-position: 0 40px; }
-  }
-</style>
+        /* --- Keyframes --- */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translate(-50%, 40px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
 
-<div class="aurora">
-  <div class="aurora-blob a1"></div>
-  <div class="aurora-blob a2"></div>
-  <div class="aurora-blob a3"></div>
-  <div class="aurora-blob a4"></div>
-  <div class="aurora-blob a5"></div>
-  <div class="aurora-blob a6"></div>
-</div>
-
-<div class="grid"></div>
-<div class="particles" id="particles"></div>
-
-<div class="corner corner-tl"><svg viewBox="0 0 28 28"><line x1="0" y1="0" x2="28" y2="0"/><line x1="0" y1="0" x2="0" y2="28"/></svg></div>
-<div class="corner corner-tr"><svg viewBox="0 0 28 28"><line x1="0" y1="0" x2="28" y2="0"/><line x1="0" y1="0" x2="0" y2="28"/></svg></div>
-<div class="corner corner-bl"><svg viewBox="0 0 28 28"><line x1="0" y1="0" x2="28" y2="0"/><line x1="0" y1="0" x2="0" y2="28"/></svg></div>
-<div class="corner corner-br"><svg viewBox="0 0 28 28"><line x1="0" y1="0" x2="28" y2="0"/><line x1="0" y1="0" x2="0" y2="28"/></svg></div>
-
-<div class="side-label left">FLOWLY · DRAWKI · TEMPO · EASYCV</div>
-<div class="side-label right">DRAWKIFLOW · SUITE 2025</div>
-
-<a href="https://github.com/Atromost/Flowly-Notes" target="_blank" class="github-btn">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-  </svg>
-  <span>GitHub</span>
-  <div class="gh-badge">OSS</div>
-</a>
-
-<div class="wrapper">
-  <div class="eyebrow">Creative Suite — Est. 2025</div>
-  <div class="brand">
-    <span class="brand-drawki">Drawki</span>
-    <span class="brand-dot">·</span>
-    <span class="brand-flow">Flow</span>
-  </div>
-  <div class="tagline">
-    <span class="tagline-word tw-flowly">Flowly</span>
-    <div class="tagline-sep"></div>
-    <span class="tagline-word tw-drawki">Drawki</span>
-    <div class="tagline-sep"></div>
-    <span class="tagline-word tw-tempo">Tempo</span>
-  </div>
-  <div class="bottom-tag" style="margin-top:-8px; font-size:9px; letter-spacing:0.28em; color:rgba(255,255,255,0.16);">
-    YOUR TOOLS &nbsp;·&nbsp; <span>ONE PLACE</span>
-  </div>
-  <div class="badges">
-    <div class="badge badge-flowly">Node Notes</div>
-    <div class="badge badge-drawki">Freeform Canvas</div>
-    <div class="badge badge-tempo">Precision Timer</div>
-    <div class="badge badge-easycv">CV Builder</div>
-  </div>
-  <div class="bottom-tag">
-    <span>DRAWKIFLOW</span> &nbsp;·&nbsp; OPEN SOURCE &nbsp;·&nbsp; <span>2025</span>
-  </div>
-</div>
-
-<div class="dock-outer">
-  <div class="dock-panel" id="dockPanel"></div>
-</div>
-
-<div id="loadingScreen">
-  <div class="loading-bg"></div>
-  <div class="loading-scanline"></div>
-  <div class="loading-label" id="loadingLabel">Launching</div>
-  <div class="loading-icon-wrap">
-    <div class="loading-glow" id="loadingGlow"></div>
-    <div class="loader">
-      <svg id="cloud" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-        <defs>
-          <filter id="roundness"><feGaussianBlur in="SourceGraphic" stdDeviation="1.5"></feGaussianBlur><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 20 -10"></feColorMatrix></filter>
-          <mask id="shapes"><g fill="white"><polygon points="50 37.5 80 75 20 75 50 37.5"></polygon><circle cx="20" cy="60" r="15"></circle><circle cx="80" cy="60" r="15"></circle><g><circle cx="20" cy="60" r="15"></circle><circle cx="20" cy="60" r="15"></circle><circle cx="20" cy="60" r="15"></circle></g></g></mask>
-          <mask id="clipping" clipPathUnits="userSpaceOnUse"><g id="lines" filter="url(#roundness)"><g mask="url(#shapes)" stroke="white"><line x1="-50" y1="-40" x2="150" y2="-40"></line><line x1="-50" y1="-31" x2="150" y2="-31"></line><line x1="-50" y1="-22" x2="150" y2="-22"></line><line x1="-50" y1="-13" x2="150" y2="-13"></line><line x1="-50" y1="-4" x2="150" y2="-4"></line><line x1="-50" y1="5" x2="150" y2="5"></line><line x1="-50" y1="14" x2="150" y2="14"></line><line x1="-50" y1="23" x2="150" y2="23"></line><line x1="-50" y1="32" x2="150" y2="32"></line><line x1="-50" y1="41" x2="150" y2="41"></line><line x1="-50" y1="50" x2="150" y2="50"></line><line x1="-50" y1="59" x2="150" y2="59"></line><line x1="-50" y1="68" x2="150" y2="68"></line><line x1="-50" y1="77" x2="150" y2="77"></line><line x1="-50" y1="86" x2="150" y2="86"></line><line x1="-50" y1="95" x2="150" y2="95"></line><line x1="-50" y1="104" x2="150" y2="104"></line><line x1="-50" y1="113" x2="150" y2="113"></line><line x1="-50" y1="122" x2="150" y2="122"></line><line x1="-50" y1="131" x2="150" y2="131"></line><line x1="-50" y1="140" x2="150" y2="140"></line></g></g></mask>
-        </defs>
-        <rect x="0" y="0" width="100" height="100" rx="0" ry="0" mask="url(#clipping)"></rect>
-        <g><path d="M33.52,68.12 C35.02,62.8 39.03,58.52 44.24,56.69 C49.26,54.93 54.68,55.61 59.04,58.4 C59.04,58.4 56.24,60.53 56.24,60.53 C55.45,61.13 55.68,62.37 56.63,62.64 C56.63,62.64 67.21,65.66 67.21,65.66 C67.98,65.88 68.75,65.3 68.74,64.5 C68.74,64.5 68.68,53.5 68.68,53.5 C68.67,52.51 67.54,51.95 66.75,52.55 C66.75,52.55 64.04,54.61 64.04,54.61 C57.88,49.79 49.73,48.4 42.25,51.03 C35.2,53.51 29.78,59.29 27.74,66.49 C27.29,68.08 28.22,69.74 29.81,70.19 C30.09,70.27 30.36,70.31 30.63,70.31 C31.94,70.31 33.14,69.44 33.52,68.12Z"></path><path d="M69.95,74.85 C68.35,74.4 66.7,75.32 66.25,76.92 C64.74,82.24 60.73,86.51 55.52,88.35 C50.51,90.11 45.09,89.43 40.73,86.63 C40.73,86.63 43.53,84.51 43.53,84.51 C44.31,83.91 44.08,82.67 43.13,82.4 C43.13,82.4 32.55,79.38 32.55,79.38 C31.78,79.16 31.02,79.74 31.02,80.54 C31.02,80.54 31.09,91.54 31.09,91.54 C31.09,92.53 32.22,93.09 33.01,92.49 C33.01,92.49 35.72,90.43 35.72,90.43 C39.81,93.63 44.77,95.32 49.84,95.32 C52.41,95.32 55,94.89 57.51,94.01 C64.56,91.53 69.99,85.75 72.02,78.55 C72.47,76.95 71.54,75.3 69.95,74.85Z"></path></g>
-      </svg>
+    <!-- Background Layers -->
+    <div id="bg-container">
+        <div class="bg-grid"></div>
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+        <canvas id="particles"></canvas>
+        <div class="noise-overlay"></div>
     </div>
-  </div>
-  <div class="loading-toolname" id="loadingToolname"></div>
-  <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
-</div>
 
-<script>
-// ── CURSOR ──
-const cursor = document.getElementById('cursor');
-const ring = document.getElementById('cursorRing');
-let mx = -100, my = -100, rx = -100, ry = -100;
+    <!-- Brutalist GitHub Button -->
+    <a href="https://github.com/Atromost" target="_blank" class="brutalist-btn hover-trigger">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+            <path d="M9 18c-4.51 2-5-2-7-2"/>
+        </svg>
+        GitHub
+    </a>
 
-document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
-document.addEventListener('mouseup',   () => cursor.classList.remove('clicking'));
+    <!-- Desktop Content -->
+    <main id="desktop-content">
+        <div class="desktop-header">
+            <h1>DrawkiFlow</h1>
+        </div>
+        <div id="glass-grid" class="glass-grid">
+            <!-- Glass apps injected via JS -->
+        </div>
+    </main>
 
-(function tick() {
-  cursor.style.left = mx - 5 + 'px';
-  cursor.style.top  = my - 5 + 'px';
-  rx += (mx - rx) * 0.13;
-  ry += (my - ry) * 0.13;
-  ring.style.left = rx - 16 + 'px';
-  ring.style.top  = ry - 16 + 'px';
-  requestAnimationFrame(tick);
-})();
+    <!-- macOS Dock -->
+    <div class="dock-wrapper">
+        <nav id="dock-container" class="dock-container">
+            <!-- Dock items injected via JS -->
+        </nav>
+    </div>
 
-const enlargeRing = () => { ring.classList.add('hovering'); ring.style.transform = 'scale(1.9)'; ring.style.opacity = '0.45'; };
-const resetRing   = () => { ring.classList.remove('hovering'); ring.style.transform = 'scale(1)'; ring.style.opacity = '1'; };
-document.querySelectorAll('.github-btn').forEach(el => {
-  el.addEventListener('mouseenter', enlargeRing);
-  el.addEventListener('mouseleave', resetRing);
-});
+    <!-- Loading Screen -->
+    <div id="loader-overlay">
+        <div class="loader-content">
+            <div id="loader-icon-container"></div>
+            <div id="loader-name">Launching...</div>
+            <div class="loader-bar-bg">
+                <div id="loader-bar-fill"></div>
+            </div>
+        </div>
+    </div>
 
-// ── PARTICLES ──
-const P = document.getElementById('particles');
-const COLORS = ['#c8f135','#7c6ff7','#e8547a','#ff6b2b','#ffd166','#f43f5e','#a78bfa'];
-for (let i = 0; i < 44; i++) {
-  const d = document.createElement('div');
-  d.className = 'p-dot';
-  const s = Math.random() * 3 + 1.2;
-  const c = COLORS[Math.floor(Math.random() * COLORS.length)];
-  d.style.cssText = `width:${s}px;height:${s}px;background:${c};box-shadow:0 0 7px ${c};left:${Math.random()*100}%;bottom:${Math.random()*20-10}%;animation-duration:${8+Math.random()*13}s;animation-delay:${Math.random()*12}s;`;
-  P.appendChild(d);
-}
+    <script>
+        // --- Configuration ---
+        const APPS = [
+            { id: 'drawkiboard', name: 'Drawki', url: 'Drawkiboard.html', color: 'var(--drawki-purple)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20h9"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' },
+            
+            { id: 'flowlynotes', name: 'Flowly', url: 'Flowlynotes.html', color: 'var(--flowly-green)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 13H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 17H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 9H8"/></svg>' },
+            
+            { id: 'anzen', name: 'Anzen', url: 'anzen.html', color: 'var(--anzen-blue)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/></svg>' },
+            
+            { id: 'easycv', name: 'EasyCV', url: 'easycv.html', color: 'var(--easycv-yellow)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect stroke-linecap="round" stroke-linejoin="round" width="20" height="14" x="2" y="7" rx="2" ry="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>' },
+            
+            { id: 'gigapdf', name: 'GigaPDF', url: 'gigapdf.html', color: 'var(--gigapdf-pink)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-6"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15 3 3 3-3"/></svg>' },
+            
+            { id: 'nexus', name: 'Nexus', url: 'nexus.html', color: 'var(--nexus-indigo)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle stroke-linecap="round" stroke-linejoin="round" cx="18" cy="5" r="3"/><circle stroke-linecap="round" stroke-linejoin="round" cx="6" cy="12" r="3"/><circle stroke-linecap="round" stroke-linejoin="round" cx="18" cy="19" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line stroke-linecap="round" stroke-linejoin="round" x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>' },
+            
+            { id: 'stopwatch', name: 'Tempo', url: 'stopwatch.html', color: 'var(--tempo-orange)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle stroke-linecap="round" stroke-linejoin="round" cx="12" cy="13" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4l2 2"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 3 2 6"/><path stroke-linecap="round" stroke-linejoin="round" d="m22 6-3-3"/><path stroke-linecap="round" stroke-linejoin="round" d="M6.38 18.7 4 21"/><path stroke-linecap="round" stroke-linejoin="round" d="M17.64 18.67 20 21"/></svg>' },
+            
+            { id: 'wikiuse', name: 'Wikiuse', url: 'wikiuse.html', color: 'var(--wikiuse-blue)', 
+              icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' }
+        ];
 
-// ── DOCK ITEMS ──
-const DOCK_ITEMS = [
-  {
-    label: 'Flowly Notes', href: 'Flowlynotes.html',
-    dotColor: '#c8f135', bg: 'rgba(200,241,53,0.09)',
-    icon: `<svg width="26" height="26" viewBox="0 0 22 22" fill="none">
-      <circle cx="4" cy="11" r="2.5" stroke="#c8f135" stroke-width="1.5"/>
-      <circle cx="18" cy="5"  r="2.5" stroke="#c8f135" stroke-width="1.5"/>
-      <circle cx="18" cy="17" r="2.5" stroke="#c8f135" stroke-width="1.5"/>
-      <circle cx="11" cy="11" r="2.5" stroke="#c8f135" stroke-width="1.5"/>
-      <line x1="6.5" y1="11" x2="8.5" y2="11"   stroke="#c8f135" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="13.5" y1="11" x2="15.5" y2="7"  stroke="#c8f135" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="13.5" y1="11" x2="15.5" y2="15" stroke="#c8f135" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`
-  },
-  {
-    label: 'DrawkiBoard', href: 'Drawkiboard.html',
-    dotColor: '#7c6ff7', bg: 'rgba(124,111,247,0.09)',
-    icon: `<svg width="26" height="26" viewBox="0 0 22 22" fill="none">
-      <rect x="3" y="13" width="8" height="6" rx="1.5" stroke="#7c6ff7" stroke-width="1.5"/>
-      <ellipse cx="16" cy="7" rx="4" ry="4"     stroke="#7c6ff7" stroke-width="1.5"/>
-      <line x1="9" y1="3" x2="13" y2="7"         stroke="#7c6ff7" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 2"/>
-    </svg>`
-  },
-  {
-    label: 'Tempo', href: 'stopwatch.html',
-    dotColor: '#ff6b2b', bg: 'rgba(255,107,43,0.09)',
-    icon: `<svg width="26" height="26" viewBox="0 0 22 22" fill="none">
-      <circle cx="11" cy="12" r="8"                stroke="#ff6b2b" stroke-width="1.5"/>
-      <rect x="9" y="2" width="4" height="2.5" rx="1" stroke="#ff6b2b" stroke-width="1.5"/>
-      <line x1="11" y1="12" x2="11" y2="6.5"      stroke="#ff6b2b" stroke-width="1.8" stroke-linecap="round"/>
-      <line x1="11" y1="12" x2="14.5" y2="14.5"   stroke="#ff6b2b" stroke-width="1.5" stroke-linecap="round"/>
-      <circle cx="11" cy="12" r="1.2"              fill="#ff6b2b"/>
-    </svg>`
-  },
-  {
-    label: 'NEXUS', href: 'nexus.html',
-    dotColor: '#00d9a0', bg: 'rgba(0,217,160,0.09)',
-    icon: `<svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-      <path d="M13 3L23 8.5V17.5L13 23L3 17.5V8.5L13 3Z" stroke="#00d9a0" stroke-width="1.5" stroke-linejoin="round" fill="rgba(0,217,160,0.08)"/>
-      <path d="M13 7L19.5 10.75V18.25L13 22L6.5 18.25V10.75L13 7Z" stroke="#00d9a0" stroke-width="1" stroke-linejoin="round" opacity="0.4"/>
-      <circle cx="13" cy="13" r="2.2" fill="#00d9a0" opacity="0.9"/>
-    </svg>`
-  },
-  {
-    label: 'Wikiuse', href: 'wikiuse.html',
-    dotColor: '#3b82f6', bg: 'rgba(59,130,246,0.09)',
-    icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="#3b82f6" stroke-width="1.5" fill="rgba(59,130,246,0.07)"/>
-      <path d="M7 9H17"  stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
-      <path d="M7 13H13" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
-      <circle cx="17" cy="13.5" r="1.8" stroke="#3b82f6" stroke-width="1.2" fill="#3b82f6"/>
-      <path d="M12 4L12 8" stroke="#3b82f6" stroke-width="1.2" stroke-linecap="round"/>
-    </svg>`
-  },
-  {
-    label: 'GigaPDF', href: 'gigapdf.html',
-    dotColor: '#f43f5e', bg: 'rgba(244,63,94,0.09)',
-    icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <rect x="4" y="2" width="12" height="16" rx="2" stroke="#f43f5e" stroke-width="1.5" fill="rgba(244,63,94,0.07)"/>
-      <path d="M14 2L20 8" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M14 2V8H20" stroke="#f43f5e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M8 12h4"    stroke="#f43f5e" stroke-width="1.4" stroke-linecap="round"/>
-      <path d="M8 9h2"     stroke="#f43f5e" stroke-width="1.4" stroke-linecap="round"/>
-      <rect x="12" y="14" width="8" height="8" rx="2" fill="rgba(244,63,94,0.85)"/>
-      <path d="M14.5 18.5h3M16 17v3" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
-    </svg>`
-  },
-  {
-    label: 'EasyCv', href: 'easycv.html',
-    dotColor: '#a78bfa', bg: 'rgba(167,139,250,0.09)',
-    icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="2" width="18" height="20" rx="2.5" stroke="#a78bfa" stroke-width="1.5" fill="rgba(167,139,250,0.07)"/>
-      <circle cx="12" cy="9" r="3" stroke="#a78bfa" stroke-width="1.4"/>
-      <path d="M6 19c0-2.21 2.686-4 6-4s6 1.79 6 4" stroke="#a78bfa" stroke-width="1.4" stroke-linecap="round"/>
-      <path d="M9 6.5h6" stroke="#a78bfa" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
-    </svg>`
-  },
-  { sep: true },
-  {
-    label: 'GitHub', href: 'https://github.com/Atromost/Flowly-Notes', external: true,
-    dotColor: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.04)',
-    icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)">
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-    </svg>`
-  }
-];
+        // --- DOM Elements ---
+        const glassGrid = document.getElementById('glass-grid');
+        const dockContainer = document.getElementById('dock-container');
+        const loaderOverlay = document.getElementById('loader-overlay');
+        const loaderIconContainer = document.getElementById('loader-icon-container');
+        const loaderName = document.getElementById('loader-name');
+        const loaderBarFill = document.getElementById('loader-bar-fill');
 
-// ── DOCK BUILD ──
-const BASE = 48, MAG = 84, DISTANCE = 176, STIFFNESS = 0.20, DAMPING = 0.68;
-const panelEl = document.getElementById('dockPanel');
-const realItems = [];
+        // --- Initialization ---
+        function init() {
+            APPS.forEach(app => {
+                // 1. Build Desktop Grid Items
+                const gridItem = document.createElement('div');
+                gridItem.className = 'glass-app hover-trigger';
+                gridItem.style.setProperty('--app-color', app.color);
+                gridItem.innerHTML = `
+                    ${app.icon}
+                    <span>${app.name}</span>
+                `;
+                gridItem.addEventListener('click', () => launchApp(app));
+                glassGrid.appendChild(gridItem);
 
-DOCK_ITEMS.forEach(item => {
-  if (item.sep) {
-    const sep = document.createElement('div');
-    sep.className = 'dock-sep';
-    panelEl.appendChild(sep);
-    return;
-  }
-  const el = document.createElement('a');
-  el.className = 'dock-item';
-  el.href = item.href;
-  if (item.external) el.target = '_blank';
-  el.style.background = item.bg;
-  el.innerHTML = `${item.icon}<div class="dock-label">${item.label}</div><div class="dock-dot" style="background:${item.dotColor};"></div>`;
-  panelEl.appendChild(el);
+                // 2. Build Dock Items
+                const dockItem = document.createElement('div');
+                dockItem.className = 'dock-item hover-trigger';
+                dockItem.style.setProperty('--app-color', app.color);
+                dockItem.innerHTML = `
+                    ${app.icon}
+                    <div class="dock-tooltip">${app.name}</div>
+                `;
+                dockItem.addEventListener('click', () => launchApp(app));
+                dockContainer.appendChild(dockItem);
+            });
 
-  el.addEventListener('mouseenter', enlargeRing);
-  el.addEventListener('mouseleave', resetRing);
+            initDockMagnification();
+            initParticles();
+            initCursor();
+        }
 
-  if (!item.external) {
-    el.addEventListener('click', e => {
-      e.preventDefault();
-      showLoadingScreen(item.label, item.dotColor, item.href);
-    });
-  }
-  realItems.push({ el, spring: { pos: BASE, vel: 0 } });
-});
+        // --- Dock Magnification (macOS style spring effect) ---
+        function initDockMagnification() {
+            const dockItems = document.querySelectorAll('.dock-item');
+            const maxScale = 1.4;
+            const influenceRadius = 150;
 
-// ── DOCK MAGNIFICATION ──
-let dockMouseX = null;
-panelEl.addEventListener('mousemove', e => { dockMouseX = e.clientX; });
-panelEl.addEventListener('mouseleave', () => { dockMouseX = null; });
+            dockContainer.addEventListener('mousemove', (e) => {
+                dockItems.forEach(item => {
+                    const rect = item.getBoundingClientRect();
+                    const itemCenterX = rect.left + rect.width / 2;
+                    const distance = Math.abs(e.clientX - itemCenterX);
+                    
+                    let scale = 1;
+                    if (distance < influenceRadius) {
+                        // Smooth cosine interpolation
+                        const normalizedDist = distance / influenceRadius;
+                        scale = 1 + (maxScale - 1) * (0.5 + 0.5 * Math.cos(normalizedDist * Math.PI));
+                    }
+                    
+                    // Apply transform inline for smooth frame updates
+                    item.style.transform = `scale(${scale}) translateY(-${(scale - 1) * 15}px)`;
+                });
+            });
 
-function getTarget(el) {
-  if (dockMouseX === null) return BASE;
-  const r = el.getBoundingClientRect();
-  const mid = r.left + r.width / 2;
-  const dist = Math.abs(dockMouseX - mid);
-  if (dist >= DISTANCE) return BASE;
-  const t = 1 - dist / DISTANCE;
-  return BASE + (MAG - BASE) * t * t;
-}
+            dockContainer.addEventListener('mouseleave', () => {
+                dockItems.forEach(item => {
+                    item.style.transform = `scale(1) translateY(0)`;
+                });
+            });
+        }
 
-// ── LOADING SCREEN ──
-const loadingScreen  = document.getElementById('loadingScreen');
-const loadingLabel   = document.getElementById('loadingLabel');
-const loadingToolname = document.getElementById('loadingToolname');
-const loadingGlow    = document.getElementById('loadingGlow');
-const loadingBarEl   = document.getElementById('loadingBar');
+        // --- Launcher Logic ---
+        function launchApp(app) {
+            // Setup Loader UI
+            loaderIconContainer.innerHTML = app.icon;
+            loaderIconContainer.style.color = app.color;
+            loaderName.textContent = `Starting ${app.name}...`;
+            loaderBarFill.style.backgroundColor = app.color;
+            loaderBarFill.style.boxShadow = `0 0 15px ${app.color}`;
+            loaderBarFill.style.width = '0%';
 
-function setLoaderColor(color) {
-  loadingScreen.style.setProperty('--loading-color', color);
-  loadingGlow.style.setProperty('--loading-color', color);
-  loadingToolname.style.setProperty('--loading-color', color);
-  const cloudRect = loadingScreen.querySelector('#cloud rect');
-  const arrowsG   = loadingScreen.querySelector('#cloud > g');
-  if (cloudRect) cloudRect.style.fill = color;
-  if (arrowsG) {
-    arrowsG.style.fill   = color + 'cc';
-    arrowsG.style.filter = `drop-shadow(0 0 9px ${color})`;
-  }
-}
+            // Show Overlay
+            loaderOverlay.classList.add('active');
+            
+            // Animate Progress Bar
+            setTimeout(() => {
+                loaderBarFill.style.width = '100%';
+            }, 100);
 
-function showLoadingScreen(label, color, href) {
-  loadingBarEl.style.animation = 'none';
-  loadingBarEl.offsetHeight;
-  loadingBarEl.style.animation = 'barFill 1.5s cubic-bezier(0.4,0,0.2,1) forwards';
-  loadingLabel.textContent   = 'Launching';
-  loadingToolname.textContent = label;
-  setLoaderColor(color);
-  loadingScreen.classList.remove('hiding');
-  loadingScreen.classList.add('visible');
-  setTimeout(() => {
-    loadingScreen.classList.add('hiding');
-    setTimeout(() => { window.location.href = href; }, 450);
-  }, 1550);
-}
+            // Redirect
+            setTimeout(() => {
+                window.location.href = app.url;
+            }, 900); // Wait for transition
+        }
 
-// ── DOCK SPRING ANIMATION ──
-(function dockTick() {
-  realItems.forEach(({ el, spring }) => {
-    const target = getTarget(el);
-    const force  = (target - spring.pos) * STIFFNESS;
-    spring.vel   = (spring.vel + force) * DAMPING;
-    spring.pos  += spring.vel;
-    const sz = Math.max(BASE, spring.pos);
-    el.style.width        = sz + 'px';
-    el.style.height       = sz + 'px';
-    el.style.borderRadius = Math.round(sz * 0.215) + 'px';
-    const svgEl = el.querySelector('svg');
-    if (svgEl) {
-      const iconSz = Math.round(26 * (sz / BASE));
-      svgEl.setAttribute('width',  Math.min(iconSz, 42));
-      svgEl.setAttribute('height', Math.min(iconSz, 42));
-    }
-  });
-  requestAnimationFrame(dockTick);
-})();
-</script>
+        // --- Canvas Particles ---
+        function initParticles() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 1.5 + 0.5;
+                    this.speedY = (Math.random() * 0.5 + 0.1) * -1;
+                    this.speedX = (Math.random() - 0.5) * 0.2;
+                    this.opacity = Math.random() * 0.5 + 0.1;
+                }
+                update() {
+                    this.y += this.speedY;
+                    this.x += this.speedX;
+                    if (this.y < 0) {
+                        this.y = height;
+                        this.x = Math.random() * width;
+                    }
+                }
+                draw() {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 60; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- Custom Cursor ---
+        function initCursor() {
+            const dot = document.getElementById('cursor-dot');
+            const ring = document.getElementById('cursor-ring');
+            
+            let mouseX = window.innerWidth / 2;
+            let mouseY = window.innerHeight / 2;
+            let ringX = mouseX;
+            let ringY = mouseY;
+            
+            // Interaction points for hover state
+            const hoverTriggers = document.querySelectorAll('.hover-trigger');
+            
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                
+                // Dot follows exactly
+                dot.style.transform = `translate(calc(${mouseX}px - 50%), calc(${mouseY}px - 50%))`;
+            });
+
+            // Re-apply hover listeners when generating new elements dynamically
+            function attachHoverStates() {
+                document.querySelectorAll('.hover-trigger').forEach(el => {
+                    el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+                    el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+                });
+            }
+            attachHoverStates();
+
+            // Ring follows with spring easing
+            function animateCursor() {
+                ringX += (mouseX - ringX) * 0.15;
+                ringY += (mouseY - ringY) * 0.15;
+                ring.style.transform = `translate(calc(${ringX}px - 50%), calc(${ringY}px - 50%))`;
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+            
+            // Hide normal cursor when leaving window
+            document.addEventListener('mouseleave', () => {
+                dot.style.opacity = '0';
+                ring.style.opacity = '0';
+            });
+            document.addEventListener('mouseenter', () => {
+                dot.style.opacity = '1';
+                ring.style.opacity = '1';
+            });
+        }
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
 </body>
 </html>
