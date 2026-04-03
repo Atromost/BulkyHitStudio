@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Easy CV — Resume Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     EASY CV — Single-file Resume Builder
+     Sections: Variables → Reset → Layout → Form → Preview → 
+               Modal → Dark Mode → Print → Animations
+     ============================================================ -->
+
+<style>
+/* ══════════════════════════════════════════════
+   1. DESIGN TOKENS
+══════════════════════════════════════════════ */
+:root {
+  /* Light theme */
+  --bg:          #f0eeea;
+  --bg2:         #e8e5df;
+  --surface:     #ffffff;
+  --surface2:    #f7f6f3;
+  --border:      #e2ddd6;
+  --border2:     #d0cbc2;
+  --text:        #1a1714;
+  --text2:       #5a554e;
+  --text3:       #9a9188;
+  --accent:      #2a6049;
+  --accent-light:#e8f3ee;
+  --accent-mid:  #c3ddd2;
+  --danger:      #c0392b;
+  --danger-light:#fdecea;
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.07);
+  --shadow-md:   0 4px 20px rgba(0,0,0,0.09);
+  --shadow-lg:   0 12px 48px rgba(0,0,0,0.12);
+  --radius:      12px;
+  --radius-sm:   8px;
+  --radius-lg:   18px;
+  --font-body:   'DM Sans', system-ui, sans-serif;
+  --font-display:'DM Serif Display', Georgia, serif;
+  --transition:  0.2s cubic-bezier(0.4,0,0.2,1);
+
+  /* CV accent colour (applied in preview) */
+  --cv-accent:   #1d4e3a;
+  --cv-accent2:  #2a6049;
+}
+
+[data-theme="dark"] {
+  --bg:          #131210;
+  --bg2:         #1a1916;
+  --surface:     #201f1c;
+  --surface2:    #2a2925;
+  --border:      #363330;
+  --border2:     #443f3a;
+  --text:        #f0ece6;
+  --text2:       #a09890;
+  --text3:       #6a625a;
+  --accent:      #4caf82;
+  --accent-light:#1a2e23;
+  --accent-mid:  #2a4a38;
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg:   0 12px 48px rgba(0,0,0,0.5);
+}
+
+/* ══════════════════════════════════════════════
+   2. RESET & BASE
+══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+  -webkit-font-smoothing: antialiased;
+}
+
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ══════════════════════════════════════════════
+   3. SCROLLBAR
+══════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* ══════════════════════════════════════════════
+   4. HEADER / TOPBAR
+══════════════════════════════════════════════ */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  height: 58px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.topbar-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-mark {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.brand-mark svg { width: 18px; height: 18px; fill: white; }
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.brand-name span { color: var(--accent); }
+
+.topbar-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 0.82rem; font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.btn:active { transform: scale(0.97); }
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text2);
+}
+.btn-ghost:hover {
+  background: var(--surface2);
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 16px rgba(42,96,73,0.3);
+}
+
+.btn-danger {
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: transparent;
+}
+.btn-danger:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-sm {
+  padding: 5px 11px;
+  font-size: 0.76rem;
+  gap: 4px;
+}
+.btn-sm svg { width: 12px; height: 12px; }
+
+/* Theme toggle */
+.theme-toggle {
+  width: 36px; height: 36px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text2);
+}
+.theme-toggle:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-mid); }
+.theme-toggle svg { width: 16px; height: 16px; }
+
+/* ══════════════════════════════════════════════
+   5. MAIN LAYOUT — SPLIT PANE
+══════════════════════════════════════════════ */
+.app-body {
+  display: grid;
+  grid-template-columns: 480px 1fr;
+  height: calc(100vh - 58px);
+  overflow: hidden;
+}
+
+/* Form panel */
+.form-panel {
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+/* Preview panel */
+.preview-panel {
+  overflow-y: auto;
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  transition: background var(--transition);
+}
+
+/* ══════════════════════════════════════════════
+   6. FORM STYLES
+══════════════════════════════════════════════ */
+.form-inner { padding: 24px; display: flex; flex-direction: column; gap: 0; }
+
+/* Section headers */
+.form-section {
+  margin-bottom: 4px;
+  animation: fadeSlideIn 0.3s ease both;
+}
+
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.section-header:hover .section-title { color: var(--accent); }
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+  transition: color var(--transition);
+}
+.section-title .section-icon {
+  width: 24px; height: 24px;
+  background: var(--accent-light);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.section-title .section-icon svg { width: 13px; height: 13px; color: var(--accent); }
+
+.section-toggle {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  color: var(--text3);
+  transition: transform var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+.section-header.collapsed .section-toggle { transform: rotate(-90deg); }
+.section-header.collapsed + .section-body { display: none; }
+
+.section-body { padding-bottom: 8px; }
+
+/* Field groups */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.field-row.single { grid-template-columns: 1fr; }
+.field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+.field-group {
+  display: flex; flex-direction: column; gap: 5px;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.field-input {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  resize: none;
+}
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+  background: var(--surface);
+}
+.field-input::placeholder { color: var(--text3); }
+
+textarea.field-input { min-height: 80px; }
+
+/* ── Dynamic entries (education / experience / projects) ── */
+.dynamic-entry {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  position: relative;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  animation: fadeSlideIn 0.25s ease both;
+}
+.dynamic-entry:hover { border-color: var(--border2); }
+
+.entry-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.entry-number {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text3);
+}
+.entry-remove {
+  width: 24px; height: 24px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.entry-remove:hover { background: var(--danger-light); color: var(--danger); }
+.entry-remove svg { width: 13px; height: 13px; }
+
+.add-btn-wrap {
+  display: flex; justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+/* ── Skills ── */
+.skills-input-wrap {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.skills-bag {
+  display: flex; flex-wrap: wrap; gap: 7px;
+  min-height: 36px;
+}
+.skill-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-mid);
+  border-radius: 999px;
+  font-size: 0.78rem; font-weight: 500;
+  color: var(--accent);
+  animation: popIn 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+  cursor: default;
+}
+.skill-tag button {
+  width: 14px; height: 14px; padding: 0;
+  background: transparent; border: none;
+  color: var(--accent); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  opacity: 0.7;
+  transition: opacity var(--transition), background var(--transition);
+  font-size: 14px; line-height: 1;
+}
+.skill-tag button:hover { opacity: 1; background: var(--accent); color: white; }
+
+/* ══════════════════════════════════════════════
+   7. LIVE PREVIEW
+══════════════════════════════════════════════ */
+.preview-toolbar {
+  width: 100%; max-width: 700px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.preview-label {
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text3);
+  display: flex; align-items: center; gap: 6px;
+}
+.preview-label::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #4caf82;
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(76,175,130,0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(76,175,130,0); }
+}
+
+/* ── CV Paper ── */
+.cv-paper {
+  width: 100%; max-width: 700px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,0.04);
+  overflow: hidden;
+  font-family: 'DM Sans', Georgia, sans-serif;
+  color: #1a1714;
+  position: relative;
+  transition: box-shadow var(--transition);
+}
+
+/* CV accent sidebar */
+.cv-sidebar-accent {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: var(--cv-accent);
+}
+
+.cv-header {
+  padding: 40px 44px 28px 52px;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.cv-name {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 2.1rem;
+  color: var(--cv-accent);
+  line-height: 1.15;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+  transition: color 0.3s;
+  min-height: 1.2em;
+}
+.cv-name.empty::after {
+  content: 'Your Name';
+  color: #ccc;
+}
+
+.cv-contact-row {
+  display: flex; flex-wrap: wrap; gap: 4px 18px;
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 16px;
+}
+.cv-contact-item {
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.cv-contact-item svg { width: 11px; height: 11px; color: var(--cv-accent2); flex-shrink: 0; }
+
+.cv-summary {
+  font-size: 0.875rem;
+  color: #3a3a3a;
+  line-height: 1.75;
+  font-style: italic;
+  border-left: 3px solid var(--cv-accent);
+  padding-left: 12px;
+  margin-top: 4px;
+}
+
+.cv-body { padding: 28px 44px 36px 52px; }
+
+.cv-section { margin-bottom: 26px; }
+.cv-section:last-child { margin-bottom: 0; }
+
+.cv-section-title {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cv-accent);
+  padding-bottom: 7px;
+  border-bottom: 2px solid var(--cv-accent);
+  margin-bottom: 16px;
+}
+
+.cv-entry { margin-bottom: 16px; }
+.cv-entry:last-child { margin-bottom: 0; }
+
+.cv-entry-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 2px;
+}
+.cv-entry-title {
+  font-weight: 600; font-size: 0.9rem; color: #1a1714;
+}
+.cv-entry-date {
+  font-size: 0.75rem; color: #888; white-space: nowrap; flex-shrink: 0;
+  font-style: italic;
+}
+.cv-entry-sub {
+  font-size: 0.82rem; color: var(--cv-accent2); font-weight: 500;
+  margin-bottom: 4px;
+}
+.cv-entry-desc {
+  font-size: 0.82rem; color: #444; line-height: 1.65;
+}
+
+.cv-skills-wrap {
+  display: flex; flex-wrap: wrap; gap: 7px;
+}
+.cv-skill-badge {
+  padding: 3px 12px;
+  background: #f0f7f3;
+  border: 1px solid #c3ddd2;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  color: var(--cv-accent);
+  font-weight: 500;
+}
+
+/* Empty state for sections */
+.cv-empty-msg {
+  font-size: 0.78rem; color: #bbb; font-style: italic;
+  padding: 6px 0;
+}
+
+/* ══════════════════════════════════════════════
+   8. MODAL — Generate / Export
+══════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 680px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-overlay.open .modal-box { transform: none; }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem; color: var(--text);
+}
+.modal-close {
+  width: 32px; height: 32px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; color: var(--text2);
+  transition: all var(--transition);
+}
+.modal-close:hover { background: var(--danger-light); color: var(--danger); border-color: transparent; }
+
+.modal-body {
+  overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.export-actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+
+.export-tab-row {
+  display: flex; gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.export-tab {
+  padding: 8px 18px;
+  font-size: 0.8rem; font-weight: 500;
+  background: var(--surface2);
+  border: none; cursor: pointer; color: var(--text2);
+  transition: all var(--transition);
+  border-right: 1px solid var(--border);
+}
+.export-tab:last-child { border-right: none; }
+.export-tab.active { background: var(--accent); color: white; }
+.export-tab:hover:not(.active) { background: var(--surface); color: var(--text); }
+
+.code-block {
+  background: #1a1916;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.code-block pre {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.72rem;
+  color: #e0d8cc;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 260px;
+  overflow-y: auto;
+  line-height: 1.7;
+}
+.code-copy-btn {
+  position: absolute; top: 10px; right: 10px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   9. TOAST NOTIFICATION
+══════════════════════════════════════════════ */
+.toast-container {
+  position: fixed; bottom: 24px; right: 24px; z-index: 2000;
+  display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 16px;
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+  display: flex; align-items: center; gap: 8px;
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  max-width: 280px;
+}
+.toast.success { border-left: 3px solid #4caf82; }
+.toast.error   { border-left: 3px solid var(--danger); }
+.toast svg { width: 15px; height: 15px; flex-shrink: 0; }
+.toast.success svg { color: #4caf82; }
+.toast.error   svg { color: var(--danger); }
+
+@keyframes toastIn {
+  from { opacity:0; transform: translateX(20px) scale(0.95); }
+  to   { opacity:1; transform: none; }
+}
+@keyframes toastOut {
+  to   { opacity:0; transform: translateX(20px) scale(0.95); }
+}
+
+/* ══════════════════════════════════════════════
+   10. ANIMATIONS
+══════════════════════════════════════════════ */
+@keyframes fadeSlideIn {
+  from { opacity:0; transform: translateY(8px); }
+  to   { opacity:1; transform: none; }
+}
+@keyframes popIn {
+  from { opacity:0; transform: scale(0.7); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+/* ══════════════════════════════════════════════
+   11. RESPONSIVE — MOBILE
+══════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .app-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    overflow: visible;
+  }
+  .form-panel { border-right: none; border-bottom: 1px solid var(--border); overflow: visible; }
+  .preview-panel { padding: 20px 12px 40px; }
+  .cv-header { padding: 28px 24px 20px 32px; }
+  .cv-body   { padding: 20px 24px 28px 32px; }
+  .cv-name   { font-size: 1.6rem; }
+  .btn-hide-mobile { display: none; }
+  .topbar-actions { gap: 6px; }
+  .brand-name { font-size: 1rem; }
+}
+
+@media (max-width: 600px) {
+  .form-inner { padding: 16px; }
+  .field-row { grid-template-columns: 1fr; }
+  .field-row.triple { grid-template-columns: 1fr; }
+  .preview-toolbar { flex-direction: column; align-items: flex-start; }
+  .modal-box { max-height: 95vh; }
+}
+
+/* ══════════════════════════════════════════════
+   12. PRINT STYLES
+══════════════════════════════════════════════ */
+@media print {
+  body * { visibility: hidden; }
+  .cv-paper, .cv-paper * { visibility: visible; }
+  .cv-paper {
+    position: fixed; inset: 0;
+    width: 100%; max-width: none;
+    box-shadow: none;
+    border-radius: 0;
+    font-size: 10pt;
+  }
+  @page { margin: 0; size: A4; }
+}
+
+/* ══════════════════════════════════════════════
+   13. MISC UTILITY
+══════════════════════════════════════════════ */
+.divider {
+  height: 1px; background: var(--border);
+  margin: 8px 0 20px;
+}
+.text-muted { color: var(--text3); font-size: 0.8rem; }
+.flex { display: flex; }
+.gap-8 { gap: 8px; }
+.ml-auto { margin-left: auto; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-mark">
+      <!-- CV / Document icon -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 4h5v5h6v11H6V4zm2 8h8v1H8v-1zm0 3h8v1H8v-1zm0 3h5v1H8v-1z"/>
+      </svg>
+    </div>
+    <span class="brand-name">Easy<span>CV</span></span>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="btn btn-ghost btn-sm btn-hide-mobile" id="btnReset" title="Reset all fields">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+      Reset
+    </button>
+    <button class="theme-toggle" id="btnTheme" title="Toggle dark mode">
+      <!-- Sun icon -->
+      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <!-- Moon icon -->
+      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="hidden"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="btn btn-primary btn-sm" id="btnGenerate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Generate CV
+    </button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     MAIN SPLIT LAYOUT
+══════════════════════════════════════════ -->
+<div class="app-body">
+
+  <!-- ── LEFT: FORM PANEL ── -->
+  <aside class="form-panel">
+    <div class="form-inner">
+
+      <!-- PERSONAL INFO -->
+      <div class="form-section">
+        <div class="section-header" data-section="personal">
+          <div class="section-title">
+            <span class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            Personal Info
+          </div>
+          <span class="section-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+        <div class="section-body" id="body-personal">
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Full Name</label>
+              <input class="field-input" type="text" id="f-name" placeholder="Jane Doe" autocomplete="off">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Job Title</label>
+              <input class="field-input" type="text" id="f-title" placeholder="Software Engineer" autocomplete="off">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Email</label>
+              <input class="field-input" type="email" id="f-email" placeholder="jane@example.com" autocomplete="off">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Phone</label>
+              <input class="field-input" type="text" id="f-phone" placeholder="+1 234 567 8900" autocomplete="off">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Location</label>
+              <input class="field-input" type="text" id="f-location" placeholder="New York, NY" autocomplete="off">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Website / LinkedIn</label>
+              <input class="field-input" type="text" id="f-website" placeholder="linkedin.com/in/jane" autocomplete="off">
+            </div>
+          </div>
+          <div class="field-row single">
+            <div class="field-group">
+              <label class="field-label">Profile Summary</label>
+              <textarea class="field-input" id="f-summary" placeholder="A brief statement about your background and goals..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDUCATION -->
+      <div class="form-section">
+        <div class="section-header" data-section="education">
+          <div class="section-title">
+            <span class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.66 3.13 3 6 3s6-1.34 6-3v-5"/></svg>
+            </span>
+            Education
+          </div>
+          <span class="section-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+        <div class="section-body" id="body-education">
+          <div id="education-list"></div>
+          <div class="add-btn-wrap">
+            <button class="btn btn-ghost btn-sm" id="addEducation">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Education
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPERIENCE -->
+      <div class="form-section">
+        <div class="section-header" data-section="experience">
+          <div class="section-title">
+            <span class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+            </span>
+            Experience
+          </div>
+          <span class="section-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+        <div class="section-body" id="body-experience">
+          <div id="experience-list"></div>
+          <div class="add-btn-wrap">
+            <button class="btn btn-ghost btn-sm" id="addExperience">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Experience
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="form-section">
+        <div class="section-header" data-section="projects">
+          <div class="section-title">
+            <span class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </span>
+            Projects
+          </div>
+          <span class="section-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+        <div class="section-body" id="body-projects">
+          <div id="projects-list"></div>
+          <div class="add-btn-wrap">
+            <button class="btn btn-ghost btn-sm" id="addProject">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Project
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="form-section">
+        <div class="section-header" data-section="skills">
+          <div class="section-title">
+            <span class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </span>
+            Skills
+          </div>
+          <span class="section-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </div>
+        <div class="section-body" id="body-skills">
+          <div class="skills-input-wrap">
+            <input class="field-input" type="text" id="skill-input" placeholder="Type a skill and press Enter…" style="flex:1;">
+          </div>
+          <div class="skills-bag" id="skills-bag"></div>
+        </div>
+      </div>
+
+    </div><!-- /form-inner -->
+  </aside>
+
+  <!-- ── RIGHT: PREVIEW PANEL ── -->
+  <main class="preview-panel">
+    <div class="preview-toolbar">
+      <span class="preview-label">Live Preview</span>
+      <div class="flex gap-8">
+        <button class="btn btn-ghost btn-sm" id="btnPrint" title="Download as PDF">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print / PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- THE LIVE CV PAPER -->
+    <div class="cv-paper" id="cvPaper">
+      <div class="cv-sidebar-accent"></div>
+
+      <!-- Header / Personal -->
+      <div class="cv-header">
+        <div class="cv-name empty" id="cv-name"></div>
+        <div style="font-size:0.85rem;color:#777;font-style:italic;margin-bottom:10px;min-height:1.2em;" id="cv-title"></div>
+        <div class="cv-contact-row" id="cv-contact"></div>
+        <div class="cv-summary" id="cv-summary" style="display:none;"></div>
+      </div>
+
+      <!-- Body -->
+      <div class="cv-body">
+        <!-- Education -->
+        <div class="cv-section" id="cv-sec-education" style="display:none;">
+          <div class="cv-section-title">Education</div>
+          <div id="cv-education"></div>
+        </div>
+
+        <!-- Experience -->
+        <div class="cv-section" id="cv-sec-experience" style="display:none;">
+          <div class="cv-section-title">Experience</div>
+          <div id="cv-experience"></div>
+        </div>
+
+        <!-- Projects -->
+        <div class="cv-section" id="cv-sec-projects" style="display:none;">
+          <div class="cv-section-title">Projects</div>
+          <div id="cv-projects"></div>
+        </div>
+
+        <!-- Skills -->
+        <div class="cv-section" id="cv-sec-skills" style="display:none;">
+          <div class="cv-section-title">Skills</div>
+          <div class="cv-skills-wrap" id="cv-skills"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div><!-- /app-body -->
+
+<!-- ══════════════════════════════════════════
+     GENERATE / EXPORT MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">Generate &amp; Export CV</span>
+      <button class="modal-close" id="modalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted">Your resume is ready. Download as PDF via the print dialog, or copy the code blocks below to use anywhere.</p>
+
+      <div class="export-actions">
+        <button class="btn btn-primary btn-sm" id="btnModalPrint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Download PDF
+        </button>
+        <button class="btn btn-ghost btn-sm" id="btnCopyFull">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Full HTML
+        </button>
+      </div>
+
+      <div>
+        <div class="export-tab-row">
+          <button class="export-tab active" data-tab="html">HTML</button>
+          <button class="export-tab" data-tab="css">CSS</button>
+          <button class="export-tab" data-tab="js">JS Note</button>
+        </div>
+        <div class="code-block">
+          <pre id="codeOutput"></pre>
+          <button class="btn btn-ghost btn-sm code-copy-btn" id="btnCopyCode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="text-muted">💡 Use Ctrl+P / Cmd+P to save as PDF directly</span>
+      <button class="btn btn-ghost btn-sm" id="modalCloseFooter">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
+<script>
+/* ============================================================
+   STATE — single source of truth
+   ============================================================ */
+const state = {
+  personal: { name:'', title:'', email:'', phone:'', location:'', website:'', summary:'' },
+  education: [],   // { school, degree, field, startDate, endDate, desc }
+  experience: [],  // { company, role, startDate, endDate, location, desc }
+  projects: [],    // { name, link, stack, desc }
+  skills: [],      // [ 'React', 'Python', ... ]
+  theme: 'light',
+  exportTab: 'html'
+};
+
+let eduCounter = 0, expCounter = 0, projCounter = 0;
+
+/* ============================================================
+   UTILITY HELPERS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function debounce(fn, delay=80) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), delay); };
+}
+
+function showToast(msg, type='success') {
+  const container = $('toastContainer');
+  const icons = {
+    success: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    error:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+  };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = (icons[type]||'') + esc(msg);
+  container.appendChild(toast);
+  setTimeout(()=>{
+    toast.style.animation='toastOut 0.3s ease forwards';
+    setTimeout(()=>toast.remove(), 300);
+  }, 2800);
+}
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  $('iconSun').classList.toggle('hidden', theme==='dark');
+  $('iconMoon').classList.toggle('hidden', theme==='light');
+  state.theme = theme;
+  localStorage.setItem('easycv-theme', theme);
+}
+
+$('btnTheme').addEventListener('click', ()=>{
+  applyTheme(state.theme==='light' ? 'dark' : 'light');
+});
+
+/* ============================================================
+   SECTION COLLAPSE
+   ============================================================ */
+document.querySelectorAll('.section-header').forEach(header => {
+  header.addEventListener('click', ()=>{
+    header.classList.toggle('collapsed');
+  });
+});
+
+/* ============================================================
+   PERSONAL FORM — real-time binding
+   ============================================================ */
+const personalFields = ['name','title','email','phone','location','website','summary'];
+
+personalFields.forEach(key => {
+  const el = $(`f-${key}`);
+  if (!el) return;
+  el.addEventListener('input', debounce(()=>{
+    state.personal[key] = el.value.trim();
+    updatePreview();
+  }));
+});
+
+/* ============================================================
+   DYNAMIC ENTRIES — Education / Experience / Projects
+   ============================================================ */
+
+/* ── EDUCATION ── */
+function createEducationEntry() {
+  eduCounter++;
+  const id = eduCounter;
+  const entry = { id, school:'', degree:'', field:'', startDate:'', endDate:'', desc:'' };
+  state.education.push(entry);
+
+  const el = document.createElement('div');
+  el.className = 'dynamic-entry';
+  el.dataset.id = id;
+  el.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-number">Education #${state.education.length}</span>
+      <button class="entry-remove" title="Remove">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Institution</label>
+        <input class="field-input" data-key="school" placeholder="MIT" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Degree</label>
+        <input class="field-input" data-key="degree" placeholder="B.Sc." autocomplete="off">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Field of Study</label>
+        <input class="field-input" data-key="field" placeholder="Computer Science" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Start – End</label>
+        <div class="flex gap-8">
+          <input class="field-input" data-key="startDate" placeholder="2018" autocomplete="off" style="min-width:0">
+          <input class="field-input" data-key="endDate" placeholder="2022" autocomplete="off" style="min-width:0">
+        </div>
+      </div>
+    </div>
+    <div class="field-row single">
+      <div class="field-group">
+        <label class="field-label">Notes (optional)</label>
+        <textarea class="field-input" data-key="desc" placeholder="GPA, honours, relevant coursework…" style="min-height:56px;"></textarea>
+      </div>
+    </div>
+  `;
+
+  // Remove handler
+  el.querySelector('.entry-remove').addEventListener('click', ()=>{
+    state.education = state.education.filter(e=>e.id!==id);
+    el.remove();
+    renumberEntries('education-list','Education');
+    updatePreview();
+  });
+
+  // Live update handlers
+  el.querySelectorAll('[data-key]').forEach(input=>{
+    input.addEventListener('input', debounce(()=>{
+      const e = state.education.find(e=>e.id===id);
+      if (e) { e[input.dataset.key] = input.value; updatePreview(); }
+    }));
+  });
+
+  $('education-list').appendChild(el);
+  updatePreview();
+}
+
+/* ── EXPERIENCE ── */
+function createExperienceEntry() {
+  expCounter++;
+  const id = expCounter;
+  const entry = { id, company:'', role:'', startDate:'', endDate:'', location:'', desc:'' };
+  state.experience.push(entry);
+
+  const el = document.createElement('div');
+  el.className = 'dynamic-entry';
+  el.dataset.id = id;
+  el.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-number">Experience #${state.experience.length}</span>
+      <button class="entry-remove" title="Remove">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Company</label>
+        <input class="field-input" data-key="company" placeholder="Acme Corp" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Role / Title</label>
+        <input class="field-input" data-key="role" placeholder="Software Engineer" autocomplete="off">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Start – End</label>
+        <div class="flex gap-8">
+          <input class="field-input" data-key="startDate" placeholder="Jan 2022" autocomplete="off" style="min-width:0">
+          <input class="field-input" data-key="endDate" placeholder="Present" autocomplete="off" style="min-width:0">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Location</label>
+        <input class="field-input" data-key="location" placeholder="Remote" autocomplete="off">
+      </div>
+    </div>
+    <div class="field-row single">
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <textarea class="field-input" data-key="desc" placeholder="Key responsibilities and achievements…"></textarea>
+      </div>
+    </div>
+  `;
+
+  el.querySelector('.entry-remove').addEventListener('click', ()=>{
+    state.experience = state.experience.filter(e=>e.id!==id);
+    el.remove();
+    renumberEntries('experience-list','Experience');
+    updatePreview();
+  });
+
+  el.querySelectorAll('[data-key]').forEach(input=>{
+    input.addEventListener('input', debounce(()=>{
+      const e = state.experience.find(e=>e.id===id);
+      if (e) { e[input.dataset.key] = input.value; updatePreview(); }
+    }));
+  });
+
+  $('experience-list').appendChild(el);
+  updatePreview();
+}
+
+/* ── PROJECTS ── */
+function createProjectEntry() {
+  projCounter++;
+  const id = projCounter;
+  const entry = { id, name:'', link:'', stack:'', desc:'' };
+  state.projects.push(entry);
+
+  const el = document.createElement('div');
+  el.className = 'dynamic-entry';
+  el.dataset.id = id;
+  el.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-number">Project #${state.projects.length}</span>
+      <button class="entry-remove" title="Remove">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Project Name</label>
+        <input class="field-input" data-key="name" placeholder="My Awesome App" autocomplete="off">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Link (optional)</label>
+        <input class="field-input" data-key="link" placeholder="github.com/jane/app" autocomplete="off">
+      </div>
+    </div>
+    <div class="field-row single">
+      <div class="field-group">
+        <label class="field-label">Tech Stack</label>
+        <input class="field-input" data-key="stack" placeholder="React, Node.js, PostgreSQL" autocomplete="off">
+      </div>
+    </div>
+    <div class="field-row single">
+      <div class="field-group">
+        <label class="field-label">Description</label>
+        <textarea class="field-input" data-key="desc" placeholder="What the project does, your role, impact…"></textarea>
+      </div>
+    </div>
+  `;
+
+  el.querySelector('.entry-remove').addEventListener('click', ()=>{
+    state.projects = state.projects.filter(p=>p.id!==id);
+    el.remove();
+    renumberEntries('projects-list','Project');
+    updatePreview();
+  });
+
+  el.querySelectorAll('[data-key]').forEach(input=>{
+    input.addEventListener('input', debounce(()=>{
+      const p = state.projects.find(p=>p.id===id);
+      if (p) { p[input.dataset.key] = input.value; updatePreview(); }
+    }));
+  });
+
+  $('projects-list').appendChild(el);
+  updatePreview();
+}
+
+function renumberEntries(listId, label) {
+  $(`${listId}`).querySelectorAll('.entry-number').forEach((el,i)=>{
+    el.textContent = `${label} #${i+1}`;
+  });
+}
+
+$('addEducation').addEventListener('click', createEducationEntry);
+$('addExperience').addEventListener('click', createExperienceEntry);
+$('addProject').addEventListener('click', createProjectEntry);
+
+/* ============================================================
+   SKILLS — tag input
+   ============================================================ */
+const skillInput = $('skill-input');
+const skillsBag  = $('skills-bag');
+
+function addSkill(value) {
+  const skill = value.trim();
+  if (!skill || state.skills.includes(skill)) return;
+  state.skills.push(skill);
+  renderSkillTag(skill);
+  updatePreview();
+}
+
+function renderSkillTag(skill) {
+  const tag = document.createElement('span');
+  tag.className = 'skill-tag';
+  tag.innerHTML = `${esc(skill)}<button title="Remove" aria-label="Remove ${esc(skill)}">✕</button>`;
+  tag.querySelector('button').addEventListener('click', ()=>{
+    state.skills = state.skills.filter(s=>s!==skill);
+    tag.remove();
+    updatePreview();
+  });
+  skillsBag.appendChild(tag);
+}
+
+skillInput.addEventListener('keydown', e=>{
+  if (e.key==='Enter' || e.key===',') {
+    e.preventDefault();
+    addSkill(skillInput.value);
+    skillInput.value = '';
+  }
+});
+// Also support tab
+skillInput.addEventListener('blur', ()=>{
+  if (skillInput.value.trim()) {
+    addSkill(skillInput.value);
+    skillInput.value = '';
+  }
+});
+
+/* ============================================================
+   PREVIEW UPDATER — efficient DOM updates
+   ============================================================ */
+function setText(el, val, emptyClass='') {
+  const current = el.textContent;
+  if (current !== val) el.textContent = val;
+  if (emptyClass) el.classList.toggle(emptyClass, !val);
+}
+
+function updatePreview() {
+  const p = state.personal;
+
+  // Name
+  const nameEl = $('cv-name');
+  setText(nameEl, p.name);
+  nameEl.classList.toggle('empty', !p.name);
+
+  // Title
+  $('cv-title').textContent = p.title || '';
+  $('cv-title').style.display = p.title ? '' : 'none';
+
+  // Contact row
+  const contactEl = $('cv-contact');
+  const contactItems = [];
+  if (p.email)    contactItems.push(`<span class="cv-contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${esc(p.email)}</span>`);
+  if (p.phone)    contactItems.push(`<span class="cv-contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5 19.79 19.79 0 0 1 1.62 4.9 2 2 0 0 1 3.59 2.72h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>${esc(p.phone)}</span>`);
+  if (p.location) contactItems.push(`<span class="cv-contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(p.location)}</span>`);
+  if (p.website)  contactItems.push(`<span class="cv-contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>${esc(p.website)}</span>`);
+  contactEl.innerHTML = contactItems.join('');
+
+  // Summary
+  const summEl = $('cv-summary');
+  if (p.summary) {
+    summEl.textContent = p.summary;
+    summEl.style.display = '';
+  } else {
+    summEl.style.display = 'none';
+  }
+
+  // Education
+  const eduSec = $('cv-sec-education');
+  const eduEl  = $('cv-education');
+  if (state.education.length) {
+    eduEl.innerHTML = state.education.map(e=>`
+      <div class="cv-entry">
+        <div class="cv-entry-top">
+          <div class="cv-entry-title">${esc(e.school||'Institution')}</div>
+          <div class="cv-entry-date">${esc(e.startDate)}${e.startDate&&e.endDate?' – ':''}${esc(e.endDate)}</div>
+        </div>
+        ${(e.degree||e.field)?`<div class="cv-entry-sub">${esc(e.degree)}${e.degree&&e.field?', ':''}${esc(e.field)}</div>`:''}
+        ${e.desc?`<div class="cv-entry-desc">${esc(e.desc)}</div>`:''}
+      </div>
+    `).join('');
+    eduSec.style.display = '';
+  } else { eduSec.style.display = 'none'; }
+
+  // Experience
+  const expSec = $('cv-sec-experience');
+  const expEl  = $('cv-experience');
+  if (state.experience.length) {
+    expEl.innerHTML = state.experience.map(e=>`
+      <div class="cv-entry">
+        <div class="cv-entry-top">
+          <div class="cv-entry-title">${esc(e.role||'Role')}${e.company?` — <span style="font-weight:400">${esc(e.company)}</span>`:''}</div>
+          <div class="cv-entry-date">${esc(e.startDate)}${e.startDate&&e.endDate?' – ':''}${esc(e.endDate)}</div>
+        </div>
+        ${e.location?`<div class="cv-entry-sub" style="color:#888;font-size:0.78rem;font-weight:400">${esc(e.location)}</div>`:''}
+        ${e.desc?`<div class="cv-entry-desc">${esc(e.desc)}</div>`:''}
+      </div>
+    `).join('');
+    expSec.style.display = '';
+  } else { expSec.style.display = 'none'; }
+
+  // Projects
+  const projSec = $('cv-sec-projects');
+  const projEl  = $('cv-projects');
+  if (state.projects.length) {
+    projEl.innerHTML = state.projects.map(p=>`
+      <div class="cv-entry">
+        <div class="cv-entry-top">
+          <div class="cv-entry-title">${esc(p.name||'Project')}</div>
+          ${p.link?`<div class="cv-entry-date" style="font-size:0.72rem;">${esc(p.link)}</div>`:''}
+        </div>
+        ${p.stack?`<div class="cv-entry-sub" style="font-size:0.76rem;font-style:italic">${esc(p.stack)}</div>`:''}
+        ${p.desc?`<div class="cv-entry-desc">${esc(p.desc)}</div>`:''}
+      </div>
+    `).join('');
+    projSec.style.display = '';
+  } else { projSec.style.display = 'none'; }
+
+  // Skills
+  const skillSec = $('cv-sec-skills');
+  const skillEl  = $('cv-skills');
+  if (state.skills.length) {
+    skillEl.innerHTML = state.skills.map(s=>`<span class="cv-skill-badge">${esc(s)}</span>`).join('');
+    skillSec.style.display = '';
+  } else { skillSec.style.display = 'none'; }
+}
+
+/* ============================================================
+   RESET
+   ============================================================ */
+$('btnReset').addEventListener('click', ()=>{
+  if (!confirm('Reset all fields? This cannot be undone.')) return;
+
+  // Clear personal
+  personalFields.forEach(k=>{
+    const el = $(`f-${k}`);
+    if (el) el.value = '';
+    state.personal[k] = '';
+  });
+
+  // Clear dynamic entries
+  state.education = []; $('education-list').innerHTML = '';
+  state.experience = []; $('experience-list').innerHTML = '';
+  state.projects = []; $('projects-list').innerHTML = '';
+
+  // Clear skills
+  state.skills = []; $('skills-bag').innerHTML = '';
+
+  updatePreview();
+  showToast('Form reset successfully');
+});
+
+/* ============================================================
+   PRINT / PDF
+   ============================================================ */
+function printCV() { window.print(); }
+$('btnPrint').addEventListener('click', printCV);
+$('btnModalPrint').addEventListener('click', ()=>{ closeModal(); setTimeout(printCV, 300); });
+
+/* ============================================================
+   EXPORT MODAL
+   ============================================================ */
+const EXPORT_CSS = `/* Easy CV — Resume Styles */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', Georgia, sans-serif; color: #1a1714; background: #f0eeea; }
+.cv-paper { max-width: 700px; margin: 40px auto; background: #fff; box-shadow: 0 8px 40px rgba(0,0,0,0.12); position: relative; }
+.cv-accent { position:absolute; left:0; top:0; bottom:0; width:5px; background:#1d4e3a; }
+.cv-header { padding: 40px 44px 28px 52px; border-bottom: 1px solid #eee; }
+.cv-name { font-family: 'DM Serif Display', Georgia, serif; font-size: 2.1rem; color: #1d4e3a; margin-bottom: 6px; }
+.cv-title { font-size: 0.85rem; color: #777; font-style: italic; margin-bottom: 10px; }
+.cv-contact { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.8rem; color: #555; margin-bottom: 16px; }
+.cv-summary { font-size: 0.875rem; color: #3a3a3a; line-height: 1.75; font-style: italic; border-left: 3px solid #1d4e3a; padding-left: 12px; }
+.cv-body { padding: 28px 44px 36px 52px; }
+.cv-section { margin-bottom: 26px; }
+.cv-section-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #1d4e3a; padding-bottom: 7px; border-bottom: 2px solid #1d4e3a; margin-bottom: 16px; }
+.cv-entry { margin-bottom: 16px; }
+.cv-entry-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
+.cv-entry-title { font-weight: 600; font-size: 0.9rem; }
+.cv-entry-date { font-size: 0.75rem; color: #888; font-style: italic; }
+.cv-entry-sub { font-size: 0.82rem; color: #2a6049; font-weight: 500; margin-bottom: 4px; }
+.cv-entry-desc { font-size: 0.82rem; color: #444; line-height: 1.65; }
+.cv-skills { display: flex; flex-wrap: wrap; gap: 7px; }
+.cv-skill { padding: 3px 12px; background: #f0f7f3; border: 1px solid #c3ddd2; border-radius: 999px; font-size: 0.76rem; color: #1d4e3a; font-weight: 500; }
+@media print { body { background: none; } .cv-paper { box-shadow: none; margin: 0; max-width: 100%; } }`;
+
+const EXPORT_JS = `// No JavaScript is required for the generated CV HTML output.
+// The resume is a static, self-contained HTML document.
+// To add interactivity (e.g., print button), you can use:
+
+document.querySelector('.print-btn')?.addEventListener('click', () => window.print());`;
+
+function buildExportHTML() {
+  const p = state.personal;
+
+  const contactHTML = [
+    p.email    ? `<span>${esc(p.email)}</span>` : '',
+    p.phone    ? `<span>${esc(p.phone)}</span>` : '',
+    p.location ? `<span>${esc(p.location)}</span>` : '',
+    p.website  ? `<span>${esc(p.website)}</span>` : ''
+  ].filter(Boolean).join(' &nbsp;·&nbsp; ');
+
+  const eduHTML = state.education.map(e=>`
+    <div class="cv-entry">
+      <div class="cv-entry-top">
+        <div class="cv-entry-title">${esc(e.school)}</div>
+        <div class="cv-entry-date">${esc(e.startDate)}${e.startDate&&e.endDate?' – ':''}${esc(e.endDate)}</div>
+      </div>
+      ${(e.degree||e.field)?`<div class="cv-entry-sub">${esc(e.degree)}${e.degree&&e.field?', ':''}${esc(e.field)}</div>`:''}
+      ${e.desc?`<div class="cv-entry-desc">${esc(e.desc)}</div>`:''}
+    </div>`).join('');
+
+  const expHTML = state.experience.map(e=>`
+    <div class="cv-entry">
+      <div class="cv-entry-top">
+        <div class="cv-entry-title">${esc(e.role)}${e.company?' — '+esc(e.company):''}</div>
+        <div class="cv-entry-date">${esc(e.startDate)}${e.startDate&&e.endDate?' – ':''}${esc(e.endDate)}</div>
+      </div>
+      ${e.location?`<div class="cv-entry-sub" style="color:#888;font-size:0.78rem;">${esc(e.location)}</div>`:''}
+      ${e.desc?`<div class="cv-entry-desc">${esc(e.desc)}</div>`:''}
+    </div>`).join('');
+
+  const projHTML = state.projects.map(p=>`
+    <div class="cv-entry">
+      <div class="cv-entry-top">
+        <div class="cv-entry-title">${esc(p.name)}</div>
+        ${p.link?`<div class="cv-entry-date">${esc(p.link)}</div>`:''}
+      </div>
+      ${p.stack?`<div class="cv-entry-sub" style="font-style:italic">${esc(p.stack)}</div>`:''}
+      ${p.desc?`<div class="cv-entry-desc">${esc(p.desc)}</div>`:''}
+    </div>`).join('');
+
+  const skillsHTML = state.skills.map(s=>`<span class="cv-skill">${esc(s)}</span>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(p.name||'My CV')} — Resume</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cv-styles.css">
+</head>
+<body>
+<div class="cv-paper">
+  <div class="cv-accent"></div>
+  <div class="cv-header">
+    <div class="cv-name">${esc(p.name)}</div>
+    ${p.title?`<div class="cv-title">${esc(p.title)}</div>`:''}
+    ${contactHTML?`<div class="cv-contact">${contactHTML}</div>`:''}
+    ${p.summary?`<div class="cv-summary">${esc(p.summary)}</div>`:''}
+  </div>
+  <div class="cv-body">
+    ${state.education.length?`<div class="cv-section"><div class="cv-section-title">Education</div>${eduHTML}</div>`:''}
+    ${state.experience.length?`<div class="cv-section"><div class="cv-section-title">Experience</div>${expHTML}</div>`:''}
+    ${state.projects.length?`<div class="cv-section"><div class="cv-section-title">Projects</div>${projHTML}</div>`:''}
+    ${state.skills.length?`<div class="cv-section"><div class="cv-section-title">Skills</div><div class="cv-skills">${skillsHTML}</div></div>`:''}
+  </div>
+</div>
+</body>
+</html>`;
+}
+
+function openModal() {
+  setExportTab(state.exportTab);
+  $('modal').classList.add('open');
+}
+function closeModal() {
+  $('modal').classList.remove('open');
+}
+$('btnGenerate').addEventListener('click', openModal);
+$('modalClose').addEventListener('click', closeModal);
+$('modalCloseFooter').addEventListener('click', closeModal);
+$('modal').addEventListener('click', e=>{ if (e.target===$('modal')) closeModal(); });
+
+// Tab switching
+document.querySelectorAll('.export-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>setExportTab(tab.dataset.tab));
+});
+
+function setExportTab(tab) {
+  state.exportTab = tab;
+  document.querySelectorAll('.export-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.tab===tab);
+  });
+  const contents = {
+    html: buildExportHTML(),
+    css:  EXPORT_CSS,
+    js:   EXPORT_JS
+  };
+  $('codeOutput').textContent = contents[tab] || '';
+}
+
+// Copy code block
+$('btnCopyCode').addEventListener('click', ()=>{
+  navigator.clipboard.writeText($('codeOutput').textContent)
+    .then(()=>showToast('Copied to clipboard!'))
+    .catch(()=>showToast('Copy failed — please select and copy manually.','error'));
+});
+
+// Copy full HTML
+$('btnCopyFull').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(buildExportHTML())
+    .then(()=>showToast('Full HTML copied!'))
+    .catch(()=>showToast('Copy failed','error'));
+});
+
+/* ============================================================
+   INIT — restore theme + seed with empty state
+   ============================================================ */
+(function init() {
+  const savedTheme = localStorage.getItem('easycv-theme') || 'light';
+  applyTheme(savedTheme);
+  updatePreview();
+})();
+</script>
+</body>
+</html>
