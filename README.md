@@ -10,7 +10,8 @@
 ## Main GUI.
 
 For the best visual representation of the workspace, focus on these key views:
-<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/b7bf7f5c-9a8e-4634-8ec9-6b82968e33b1" />
+<img width="1366" height="768" alt="image" src="https://github.com/user-attachments/assets/0287c742-6b69-421c-9afa-e988fcd9e3eb" />
+
 
 
 * **FlowlyNotes:** A wide shot showing multiple node types (Notes, Todos, Images) connected via yellow bezier curves.
@@ -68,6 +69,8 @@ For the best visual representation of the workspace, focus on these key views:
 ---
 ## WikiUse
 ---
-
+## AnZen
+---
+## GigaPDF
 > **Note:** Flowly Notes and Drawkiboard uses hardware acceleration for smooth panning across large canvases.
 
